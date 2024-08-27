@@ -41,7 +41,8 @@ const useStyles = makeStyles(Styles);
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
-    setState((prev) => ({ ...prev, [permission]: e.target.checked }));
+    const key = `${title}-${permission}`;
+    setState((prev) => ({ ...prev, [key]: e.target.checked }));
   };
 
   return (
@@ -63,59 +64,13 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
 
 const Role = () => {
   const classes = useStyles();
-  const tableHead = ["Admin", "Active", ""];
+  const tableHead = ["Role Name", "Status", ""];
   const [name, setName]  = useState("");
   const [status, setStatus] = useState("");
   const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const [roleName, setRoleName] = useState("");
   const [allBranch, setAllBranch] = useState(false);
   const [branch, setBranch] = useState("");
-
-  const [permissions, setPermissions] = useState({
-    'Admin-Role-View': false,
-    'Admin-Role-Create': false,
-    'Admin-Role-Update': false,
-    'Admin-Banner-View': false,
-    'Admin-Banner-Create': false,
-    'Admin-Banner-Update': false,
-    'Admin-Message-View': false,
-    'Admin-Message-Create': false,
-    'Admin-Message-Update': false,
-    'Admin-Branch-View': false,
-    'Admin-Branch-Create': false,
-    'Admin-Branch-Update': false,
-    'Admin-Room-View': false,
-    'Admin-Room-Create': false,
-    'Admin-Room-Update': false,
-    'Admin-Package-View': false,
-    'Admin-Package-Create': false,
-    'Admin-Package-Update': false,
-    'Admin-Member-View': false,
-    'Admin-Member-Create': false,
-    'Admin-Member-Update': false,
-    'Admin-Booking-View': false,
-    'Admin-Booking-Create': false,
-    'Admin-Booking-Update': false,
-    'Member-CheckIn-View': false,
-    'Member-CheckIn-Create': false,
-    'Member-CheckIn-Update': false,
-    'Member-QR-View': false,
-    'Member-QR-Create': false,
-    'Member-QR-Update': false,
-    'Member-Staff-View': false,
-    'Member-Staff-Create': false,
-    'Member-Staff-Update': false,
-    'Finance-Purchase-View': false,
-    'Finance-Purchase-Create': false,
-    'Finance-Purchase-Update': false,
-    'Finance-CheckIn-View': false,
-    'Finance-CheckIn-Create': false,
-    'Finance-CheckIn-Update': false,
-    'Finance-Attendance-View': false,
-    'Finance-Attendance-Create': false,
-    'Finance-Attendance-Update': false,
-    'ActiveInactive': false,
-  });
 
   const roles = [
     { title: 'Admin-Role', permissions: ['View', 'Create', 'Update'] },
@@ -134,14 +89,14 @@ const Role = () => {
     { title: 'Finance-CheckIn', permissions: ['View', 'Create', 'Update'] },
     { title: 'Finance-Attendance', permissions: ['View', 'Create', 'Update'] },
   ];
-
-  const generatePermissionsState = (title, permissions) => {
-    return permissions.reduce((acc, perm) => {
-      const key = `${title}-${perm}`;
-      acc[key] = permissions[key] || false;
-      return acc;
-    }, {});
-  };
+  const initialPermissionsState = roles.reduce((acc, { title, permissions }) => {
+    permissions.forEach((permission) => {
+      acc[`${title}-${permission}`] = false;
+    });
+    acc['ActiveInactive'] = false;
+    return acc;
+  }, {});
+  const [permissions, setPermissions] = useState(initialPermissionsState);
 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -211,15 +166,20 @@ const Role = () => {
           {/* Filter Bar */}
           <Grid item xs={6} md={6}>
             <FormControl fullWidth margin="dense">
-              <InputLabel id="name-select">Filtered by Name</InputLabel>
+              <InputLabel id="role-name-select">Filtered by Role Name</InputLabel>
               <Select
-                labelId ="name-select"
-                id      ="name-select"
+                labelId ="role-name-select"
+                id      ="role-name-select"
                 value   ={name}
-                label   ="Filtered by Name"
+                label   ="Filtered by Role Name"
                 onChange={(e) => {setName(e.target.value)}}
               >
-                <MenuItem value="test-admin">Test Admin</MenuItem>
+                <MenuItem value="Test Admin">Test Admin</MenuItem>
+                <MenuItem value="John Doe">John Doe</MenuItem>
+                <MenuItem value="Jane Doe">Jane Doe</MenuItem>
+                <MenuItem value="James Smith">James Smith</MenuItem>
+                <MenuItem value="Mary Smith">Mary Smith</MenuItem>
+                <MenuItem value="Alice">Alice</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -282,6 +242,7 @@ const Role = () => {
           </Grid>
         </Grid>
       </Card>
+      {/* Dialog Add New Role */}
       <Dialog
         fullWidth
         maxWidth          ="md"
@@ -334,13 +295,22 @@ const Role = () => {
             </Grid>
             <Grid item xs={12} md={12}>
               {/* Other Permissions */}
-              {roles.map(({ title, permissions }) => (
+              {/* {roles.map(({ title, permissions }) => (
                 <PermissionSection
                   key={title}
                   title={title}
                   permissions={permissions}
                   state={generatePermissionsState(title, permissions)}
                   setState={(updatedState) => setPermissions((prev) => ({ ...prev, ...updatedState }))}
+                />
+              ))} */}
+              {roles.map(({ title, permissions }) => (
+                <PermissionSection
+                  key={title}
+                  title={title}
+                  permissions={permissions}
+                  state={permissions}
+                  setState={setPermissions}
                 />
               ))}
               {/* Active/InActive */}
