@@ -1,15 +1,15 @@
-import Axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import {Form, Formik} from 'formik';
-import * as yup from 'yup';
-import {Link, useNavigate} from 'react-router-dom';
-import {useIntl} from 'react-intl';
-import AppTextField from '@enjoey/core/AppFormComponents/AppTextField';
-import IntlMessages from '@enjoey/utility/IntlMessages';
-import { InputAdornment } from '@mui/material';
-import AppInfoView from '@enjoey/core/AppInfoView';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import Axios from "axios";
+import React, { useState, useEffect } from "react";
+import { Form, Formik } from "formik";
+import * as yup from "yup";
+import { Link, useNavigate } from "react-router-dom";
+import { useIntl } from "react-intl";
+import AppTextField from "@enjoey/core/AppFormComponents/AppTextField";
+import IntlMessages from "@enjoey/utility/IntlMessages";
+import { InputAdornment } from "@mui/material";
+import AppInfoView from "@enjoey/core/AppInfoView";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import {
   Button,
   IconButton,
@@ -28,51 +28,51 @@ import {
   Typography,
 } from "@mui/material";
 
-import {useAuthMethod, useAuthUser} from '@enjoey/utility/AuthHooks';
-import {Fonts} from 'shared/constants/AppEnums';
-import {AiOutlineGoogle} from 'react-icons/ai';
-import {FaFacebookF} from 'react-icons/fa';
+import { useAuthMethod, useAuthUser } from "@enjoey/utility/AuthHooks";
+import { Fonts } from "shared/constants/AppEnums";
+import { AiOutlineGoogle } from "react-icons/ai";
+import { FaFacebookF } from "react-icons/fa";
 
 const validationSchema = yup.object({
   email: yup
     .string()
-    .email(<IntlMessages id='validation.emailFormat' />)
-    .required(<IntlMessages id='validation.emailRequired' />),
+    .email(<IntlMessages id="validation.emailFormat" />)
+    .required(<IntlMessages id="validation.emailRequired" />),
   password: yup
     .string()
-    .required(<IntlMessages id='validation.passwordRequired' />),
+    .required(<IntlMessages id="validation.passwordRequired" />),
 });
 
-const appointmentUrl  = "http://localhost:8000/api/appointment/";
-const timeSlotUrl     = "http://localhost:8000/api/appointment-time-slots/";
-const branchUrl       = "http://localhost:8000/api/branch/";
+const appointmentUrl = "http://localhost:8000/api/appointment/";
+const timeSlotUrl = "http://localhost:8000/api/appointment-time-slots/";
+const branchUrl = "http://localhost:8000/api/branch/";
 
 const SigninAwsCognito = () => {
-  const {auth}                                          = useAuthUser();
-  const {signIn}                                        = useAuthMethod();
-  const navigate                                        = useNavigate();
-  const [showPassword, setShowPassword]                 = useState(false);
-  const [makeAppointment, setMakeAppointment]           = useState(false);
+  const { auth } = useAuthUser();
+  const { signIn } = useAuthMethod();
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [makeAppointment, setMakeAppointment] = useState(false);
   const [appointmentTimeSlots, setAppointmentTimeSlots] = useState([]);
-  const [branchData, setBranchData]                     = useState([]);
-  const [filteredTimeSlots, setFilteredTimeSlots]       = useState([]);
-  const [filteredBranch, setFilteredBranch]               = useState([]);
-  const [date, setDate]                                 = useState("");
-  const [time, setTime]                                 = useState("");
-  const [branch, setBranch]                             = useState("");
-  const [phone, setPhone]                               = useState("");
-  const [name, setName]                                 = useState("");
-  const [ageInterest, setAgeInterest]                   = useState("");
+  const [branchData, setBranchData] = useState([]);
+  const [filteredTimeSlots, setFilteredTimeSlots] = useState([]);
+  const [filteredBranch, setFilteredBranch] = useState([]);
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [branch, setBranch] = useState("");
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
+  const [ageInterest, setAgeInterest] = useState("");
 
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const onGoToForgetPassword = () => {
-    navigate('/forget-password', {tab: 'awsCognito'});
+    navigate("/forget-password", { tab: "awsCognito" });
   };
 
-  const {messages} = useIntl();
+  const { messages } = useIntl();
 
   useEffect(() => {
     try {
@@ -88,14 +88,18 @@ const SigninAwsCognito = () => {
   }, []);
 
   const openAppointmentSignInPage = async () => {
-    setMakeAppointment (true);
-  }
+    setMakeAppointment(true);
+  };
 
   useEffect(() => {
     if (ageInterest) {
-      const newFilteredTimeSlots = appointmentTimeSlots.filter(slot => slot.ageInterest === ageInterest);
+      const newFilteredTimeSlots = appointmentTimeSlots.filter(
+        (slot) => slot.ageInterest === ageInterest
+      );
       if (branch) {
-        const newFilteredTimeSlotsWithBranch = newFilteredTimeSlots.filter(slot => slot.branchId === branch);
+        const newFilteredTimeSlotsWithBranch = newFilteredTimeSlots.filter(
+          (slot) => slot.branchId === branch
+        );
         setFilteredTimeSlots(newFilteredTimeSlotsWithBranch);
       } else {
         setFilteredTimeSlots(newFilteredTimeSlots);
@@ -104,11 +108,13 @@ const SigninAwsCognito = () => {
       setFilteredTimeSlots([]);
     }
   }, [ageInterest, branch]);
-  
+
   useEffect(() => {
     if (ageInterest) {
       const newFilteredBranch = branchData.filter((slot) => {
-        const programsArray = slot.branchPrograms.split(',').map((program) => program.trim());
+        const programsArray = slot.branchPrograms
+          .split(",")
+          .map((program) => program.trim());
         console.log("programs", programsArray);
         return programsArray.includes(ageInterest);
       });
@@ -130,12 +136,12 @@ const SigninAwsCognito = () => {
 
     try {
       const response = await Axios({
-        method  : "POST",
-        url     : appointmentUrl,
-        data    : appointmentData,
-        headers : {"Content-Type": "multipart/form-data"},
+        method: "POST",
+        url: appointmentUrl,
+        data: appointmentData,
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      setRefresh(response.data)
+      setRefresh(response.data);
     } catch (error) {
       console.log("error", error);
     }
@@ -143,26 +149,26 @@ const SigninAwsCognito = () => {
   };
 
   const closeAppointmentSignInPage = async () => {
-    setDate                 ("");
-    setTime                 ("");
-    setBranch               ("");
-    setName                 ("");
-    setPhone                ("");
-    setAgeInterest          ("");
-    setMakeAppointment      (false);
-  }
+    setDate("");
+    setTime("");
+    setBranch("");
+    setName("");
+    setPhone("");
+    setAgeInterest("");
+    setMakeAppointment(false);
+  };
 
   return (
-    <Box sx={{flex: 1, display: 'flex', flexDirection: 'column'}}>
-      <Box sx={{flex: 1, display: 'flex', flexDirection: 'column', mb: 5}}>
+    <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", mb: 5 }}>
         <Formik
           validateOnChange={true}
           initialValues={{
-            email: 'ganweide@visualogic.com.my',
-            password: 'Devuser1!',
+            email: "ganweide@visualogic.com.my",
+            password: "Devuser1!",
           }}
           validationSchema={validationSchema}
-          onSubmit={(data, {setSubmitting}) => {
+          onSubmit={(data, { setSubmitting }) => {
             setSubmitting(true);
             signIn({
               email: data.email,
@@ -171,42 +177,45 @@ const SigninAwsCognito = () => {
             setSubmitting(false);
           }}
         >
-          {({isSubmitting}) => (
-            <Form style={{textAlign: 'left'}} noValidate autoComplete='off'>
-              <Box sx={{mb: {xs: 5, xl: 8}}}>
+          {({ isSubmitting }) => (
+            <Form style={{ textAlign: "left" }} noValidate autoComplete="off">
+              <Box sx={{ mb: { xs: 5, xl: 8 } }}>
                 <AppTextField
-                  placeholder={messages['common.email']}
-                  label={<IntlMessages id='common.email' />}
-                  name='email'
-                  variant='outlined'
+                  placeholder={messages["common.email"]}
+                  label={<IntlMessages id="common.email" />}
+                  name="email"
+                  variant="outlined"
                   sx={{
-                    width: '100%',
-                    '& .MuiInputBase-input': {
+                    width: "100%",
+                    "& .MuiInputBase-input": {
                       fontSize: 14,
                     },
                   }}
                 />
               </Box>
 
-              <Box sx={{mb: {xs: 3, xl: 4}}}>
+              <Box sx={{ mb: { xs: 3, xl: 4 } }}>
                 <AppTextField
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={messages['common.password']}
-                  label={<IntlMessages id='common.password' />}
-                  name='password'
-                  variant='outlined'
+                  type={showPassword ? "text" : "password"}
+                  placeholder={messages["common.password"]}
+                  label={<IntlMessages id="common.password" />}
+                  name="password"
+                  variant="outlined"
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton onClick={handleTogglePasswordVisibility} edge="end">
+                        <IconButton
+                          onClick={handleTogglePasswordVisibility}
+                          edge="end"
+                        >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                   sx={{
-                    width: '100%',
-                    '& .MuiInputBase-input': {
+                    width: "100%",
+                    "& .MuiInputBase-input": {
                       fontSize: 14,
                     },
                   }}
@@ -215,55 +224,67 @@ const SigninAwsCognito = () => {
 
               <Box
                 sx={{
-                  mb: {xs: 3, xl: 4},
+                  mb: { xs: 3, xl: 4 },
                 }}
               >
                 <Box
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between", // This will space the items apart
                   }}
                 >
-                  <Checkbox sx={{ml: -3}} />
                   <Box
-                    component='span'
                     sx={{
-                      color: 'grey.500',
+                      display: "flex",
+                      alignItems: "center",
                     }}
                   >
-                    <IntlMessages id='common.rememberMe' />
+                    <Checkbox sx={{ ml: -3 }} />
+                    <Box
+                      component="span"
+                      sx={{
+                        color: "grey.500",
+                      }}
+                    >
+                      <IntlMessages id="common.rememberMe" />
+                    </Box>
                   </Box>
-                </Box>
-                <Box
-                  component='span'
-                  sx={{
-                    color: (theme) => theme.palette.primary.main,
-                    fontWeight: Fonts.MEDIUM,
-                    cursor: 'pointer',
-                    display: 'block',
-                    textAlign: 'right',
-                  }}
-                  onClick={onGoToForgetPassword}
-                >
-                  <IntlMessages id='common.forgetPassword' />
+                  <Box
+                    component="span"
+                    sx={{
+                      color: (theme) => theme.palette.primary.main,
+                      fontWeight: Fonts.MEDIUM,
+                      cursor: "pointer",
+                      textAlign: "right",
+                    }}
+                    onClick={onGoToForgetPassword}
+                  >
+                    <IntlMessages id="common.forgetPassword" />
+                  </Box>
                 </Box>
               </Box>
 
-              <div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                }}
+              >
                 <Button
-                  variant='contained'
-                  color='primary'
-                  type='submit'
+                  variant="contained"
+                  color="primary"
+                  type="submit"
                   disabled={isSubmitting}
                   sx={{
                     minWidth: 160,
                     fontWeight: Fonts.REGULAR,
                     fontSize: 16,
-                    textTransform: 'capitalize',
-                    padding: '4px 16px 8px',
+                    textTransform: "capitalize",
+                    padding: "4px 16px 8px",
                   }}
                 >
-                  <IntlMessages id='common.login' />
+                  <IntlMessages id="common.login" />
                 </Button>
               </div>
             </Form>
@@ -273,55 +294,53 @@ const SigninAwsCognito = () => {
 
       <Box
         sx={{
-          color: 'grey.500',
-          mb: {xs: 5, md: 7},
+          color: "grey.500",
+          mb: { xs: 5, md: 2 },
         }}
       >
-        <span style={{marginRight: 4}}>
-          <IntlMessages id='common.dontHaveAccount' />
+        <span style={{ marginRight: 4 }}>
+          <IntlMessages id="common.dontHaveAccount" />
         </span>
         <Box
-          component='span'
+          component="span"
           sx={{
             fontWeight: Fonts.MEDIUM,
-            '& a': {
+            "& a": {
               color: (theme) => theme.palette.primary.main,
-              textDecoration: 'none',
+              textDecoration: "none",
             },
           }}
         >
-          <Link to='/signup'>
-            <IntlMessages id='common.signup' />
+          <Link to="/signup">
+            <IntlMessages id="common.signup" />
           </Link>
         </Box>
       </Box>
 
       <Box
-        component='span'
+        component="span"
         sx={{
-          color: 'grey.500',
-          mb: {xs: 5, md: 7},
+          color: "grey.500",
+          mb: { xs: 5, md: 7 },
           fontWeight: Fonts.MEDIUM,
-            '& a': {
-              color: (theme) => theme.palette.primary.main,
-              textDecoration: 'none',
-            },
+          "& a": {
+            color: (theme) => theme.palette.primary.main,
+            textDecoration: "none",
+          },
         }}
       >
-        <span style={{marginRight: 4}}>
-          <IntlMessages id='Make an Appointment'/>
+        <span style={{ marginRight: 4 }}>
+          <IntlMessages id="Make an Appointment" />
         </span>
-        <Button onClick={openAppointmentSignInPage}>
-          Appointment
-        </Button>
+        <Button onClick={openAppointmentSignInPage}>Appointment</Button>
       </Box>
       <Dialog
         fullWidth
-        maxWidth          ="sm"
-        open              ={makeAppointment}
-        onClose           ={closeAppointmentSignInPage}
-        aria-labelledby   ="alert-dialog-title"
-        aria-describedby  ="alert-dialog-description"
+        maxWidth="sm"
+        open={makeAppointment}
+        onClose={closeAppointmentSignInPage}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
       >
         <DialogTitle>
           <h2>Make an Appointment</h2>
@@ -332,11 +351,13 @@ const SigninAwsCognito = () => {
               <FormControl fullWidth margin="dense">
                 <InputLabel id="age-interest-select">Age Interest</InputLabel>
                 <Select
-                  labelId ="age-interest-select"
-                  id      ="age-interest-select"
-                  value   ={ageInterest}
-                  label   ="Age Interest"
-                  onChange={(e) => {setAgeInterest(e.target.value)}}
+                  labelId="age-interest-select"
+                  id="age-interest-select"
+                  value={ageInterest}
+                  label="Age Interest"
+                  onChange={(e) => {
+                    setAgeInterest(e.target.value);
+                  }}
                 >
                   <MenuItem value="6 - 12 months">6 - 12 months</MenuItem>
                   <MenuItem value="1 - 4 years">1 - 4 years</MenuItem>
@@ -355,7 +376,9 @@ const SigninAwsCognito = () => {
                   onChange={(e) => setBranch(e.target.value)}
                 >
                   {filteredBranch.map((prop) => (
-                    <MenuItem key={prop.branchId} value={prop.branchId}>{prop.branchName}</MenuItem>
+                    <MenuItem key={prop.branchId} value={prop.branchId}>
+                      {prop.branchName}
+                    </MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -390,33 +413,45 @@ const SigninAwsCognito = () => {
             </Grid>
             <Grid item xs={6} md={6}>
               <TextField
-                onChange        ={(e) => setDate(e.target.value)}
-                InputLabelProps ={{ shrink: true }}
-                margin          ="dense"
-                label           ="Date"
-                type            ="date"
+                onChange={(e) => setDate(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                margin="dense"
+                label="Date"
+                type="date"
                 fullWidth
-                variant         ="outlined"
-                value           ={date}
+                variant="outlined"
+                value={date}
               />
             </Grid>
-            <Grid item xs={6} md={6}>            
+            <Grid item xs={6} md={6}>
               <FormControl fullWidth margin="dense">
-                {
-                  ageInterest === "" && branch === "" ? (
-                    <InputLabel id="time-select">Please select an Age Interest</InputLabel>
-                  ) : ageInterest !== "" && branch === "" ? (
-                    <InputLabel id="time-select">Please select a Branch</InputLabel>
-                  ) : (
-                    <InputLabel id="time-select">Time (24 Hour Format)</InputLabel>
-                  )
-                }
+                {ageInterest === "" && branch === "" ? (
+                  <InputLabel id="time-select">
+                    Please select an Age Interest
+                  </InputLabel>
+                ) : ageInterest !== "" && branch === "" ? (
+                  <InputLabel id="time-select">
+                    Please select a Branch
+                  </InputLabel>
+                ) : (
+                  <InputLabel id="time-select">
+                    Time (24 Hour Format)
+                  </InputLabel>
+                )}
                 <Select
-                  labelId ="time-select"
-                  id      ="time-select"
-                  value   ={time}
-                  label   ={ageInterest === "" && branch === "" ? ("Please select an Age Interest") : ageInterest !== "" && branch === "" ? ("Please select a Branch") : ("Time (24 Hour Format)")}
-                  onChange={(e) => {setTime(e.target.value)}}
+                  labelId="time-select"
+                  id="time-select"
+                  value={time}
+                  label={
+                    ageInterest === "" && branch === ""
+                      ? "Please select an Age Interest"
+                      : ageInterest !== "" && branch === ""
+                      ? "Please select a Branch"
+                      : "Time (24 Hour Format)"
+                  }
+                  onChange={(e) => {
+                    setTime(e.target.value);
+                  }}
                   disabled={ageInterest === "" || branch === ""}
                 >
                   {filteredTimeSlots.map((slot) => (
@@ -436,15 +471,15 @@ const SigninAwsCognito = () => {
 
       <Box
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           backgroundColor: (theme) => theme.palette.background.default,
-          mx: {xs: -5, lg: -10},
-          mb: {xs: -6, lg: -11},
-          mt: 'auto',
+          mx: { xs: -5, lg: -10 },
+          mb: { xs: -6, lg: -11 },
+          mt: "auto",
           py: 2,
-          px: {xs: 5, lg: 10},
+          px: { xs: 5, lg: 10 },
         }}
       >
         <Box
@@ -452,31 +487,31 @@ const SigninAwsCognito = () => {
             color: (theme) => theme.palette.text.secondary,
           }}
         >
-          <IntlMessages id='common.orLoginWith' />
+          <IntlMessages id="common.orLoginWith" />
         </Box>
         <Box
           sx={{
-            display: 'flex',
-            alignItems: 'center',
+            display: "flex",
+            alignItems: "center",
           }}
         >
           <IconButton
             sx={{
               p: 2,
-              '& svg': {fontSize: 18},
+              "& svg": { fontSize: 18 },
               color: (theme) => theme.palette.text.secondary,
             }}
-            onClick={() => auth.federatedSignIn({provider: 'Google'})}
+            onClick={() => auth.federatedSignIn({ provider: "Google" })}
           >
             <AiOutlineGoogle />
           </IconButton>
           <IconButton
             sx={{
               p: 1.5,
-              '& svg': {fontSize: 18},
+              "& svg": { fontSize: 18 },
               color: (theme) => theme.palette.text.secondary,
             }}
-            onClick={() => auth.federatedSignIn({provider: 'Facebook'})}
+            onClick={() => auth.federatedSignIn({ provider: "Facebook" })}
           >
             <FaFacebookF />
           </IconButton>
