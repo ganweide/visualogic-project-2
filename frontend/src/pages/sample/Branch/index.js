@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import { makeStyles } from "@material-ui/core/styles";
@@ -32,11 +33,14 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import Styles from "./style";
 
+const branchURL = "http://localhost:5000/api/branches";
 const useStyles = makeStyles(Styles);
 
-const Role = () => {
+const Branch = () => {
   const classes = useStyles();
   const tableHead = ["Area Name", "Branch Name", "Contact", "OR Code", "Order", "Status", ""];
+  const [branchDatabase, setBranchDatabase] = useState([]);
+  const [refreshTable, setRefreshTable] = useState([]);
   const [area, setArea]  = useState("");
   const [branch, setBranch] = useState("");
   const [sortOrder, setSortOrder] = useState("");
@@ -60,17 +64,22 @@ const Role = () => {
   const [dialogTaxSwitch, setDialogTaxSwitch]                     = useState(false);
   const [dialogActiveSwitch, setDialogActiveSwitch]               = useState(true);
 
+  // Retrieve Data
+  useEffect(() => {
+    try {
+      axios.get(branchURL).then((response) => {
+        setBranchDatabase(response.data);
+        const latestBranch = response.data.length ? response.data[response.data.length - 1] : null;
+        setDialogOrder(latestBranch ? latestBranch.order + 1 : 1);
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }, [refreshTable]);
+
   // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const rows = [
-    { area: 'Cheras', branch: 'HQ', contact: '', qrCode: 's3bucket_imageLink1', order: '1', status: 'Inactive' },
-    { area: 'Puchong', branch: 'Branch 1', contact: '', qrCode: 's3bucket_imageLink2', order: '2', status: 'Active' },
-    { area: 'Puchong', branch: 'Branch 2', contact: '', qrCode: 's3bucket_imageLink3', order: '3', status: 'Active' },
-    { area: 'Subang', branch: 'Branch 3', contact: '', qrCode: 's3bucket_imageLink4', order: '4', status: 'Active' },
-    { area: 'Subang', branch: 'Branch 4', contact: '', qrCode: 's3bucket_imageLink5', order: '5', status: 'Inactive' },
-    { area: 'Cheras', branch: 'Branch 5', contact: '', qrCode: 's3bucket_imageLink6', order: '6', status: 'Active' },
-  ];
   const handleChangePage = (e, newPage) => {
     setPage(newPage);
   };
@@ -89,9 +98,43 @@ const Role = () => {
     setAddNewBranchDialogOpen(false);
   }
 
-  const handleSaveNewBranch = () => {
-    setAddNewBranchDialogOpen(false);
-  }
+  const handleSaveNewBranch = async () => {
+    try {
+      const data = {
+        areaName: dialogAreaName,
+        branchName: dialogBranchName,
+        branchCode: dialogBranchCode,
+        whatsappNo: dialogWhatsappNo,
+        paymentSecretKey: dialogPaymentSecretKey,
+        startOperatingHours: dialogStartOperatingHours,
+        endOperatingHours: dialogEndOperatingHours,
+        address: dialogAddress,
+        googleLink: dialogGoogleLink,
+        wazeLink: dialogWazeLink,
+        contact: dialogContact,
+        order: dialogOrder,
+        qrCode: dialogQRCode,
+        hqSwitch: dialogHQSwitch,
+        taxSwitch: dialogTaxSwitch,
+        activeSwitch: dialogActiveSwitch,
+      };
+
+      const response = await axios.post('http://localhost:5000/api/branches', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const newBranch = response.data;
+      alert('Branch created successfully!');
+      console.log('New branch added:', newBranch);
+      setRefreshTable(response.data);
+      handleCloseAddNewBranchDialog();
+    } catch (error) {
+      alert('Failed to save branch');
+      console.error('Error:', error);
+    }
+  };
 
   // Image Dropzone
   const onDrop = useCallback((acceptedFiles) => {
@@ -226,14 +269,14 @@ const Role = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {branchDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((data, index) => (
                   <TableRow key={index}>
-                    <TableCell style={{textAlign: "left"}}>{row.area}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.branch}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.contact}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.qrCode}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.order}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.status}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{data.areaName}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{data.branchName}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{data.contact}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{data.qrCode}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{data.order}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{data.activeSwitch ? "active" : "inactive"}</TableCell>
                     <TableCell style={{textAlign: "center"}}>
                       <IconButton>
                         <EditIcon />
@@ -246,7 +289,7 @@ const Role = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={rows.length}
+              count={branchDatabase.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -505,4 +548,4 @@ const Role = () => {
   )
 }
 
-export default Role
+export default Branch
