@@ -40,11 +40,15 @@ const Branch = () => {
   const classes = useStyles();
   const tableHead = ["Area Name", "Branch Name", "Contact", "OR Code", "Order", "Status", ""];
   const [branchDatabase, setBranchDatabase] = useState([]);
+  const [filteredBranchData, setFilteredBranchData] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
-  const [area, setArea]  = useState("");
-  const [branch, setBranch] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
-  const [status, setStatus] = useState("");
+  // Filtering Bar
+  const [areaNameFilterItems, setAreaNameFilterItems] = useState([]);
+  const [branchNameFilterItems, setBranchNameFilterItems] = useState([]);
+  const [areaFilter, setAreaFilter]  = useState("");
+  const [branchFilter, setBranchFilter] = useState("");
+  const [sortOrderFilter, setSortOrderFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   // Add New Branch Dialog constants
   const [dialogAreaName, setDialogAreaName]                       = useState("");
@@ -71,11 +75,47 @@ const Branch = () => {
         setBranchDatabase(response.data);
         const latestBranch = response.data.length ? response.data[response.data.length - 1] : null;
         setDialogOrder(latestBranch ? latestBranch.order + 1 : 1);
+        const area = response.data.map(data => data.areaName || 'null');
+        const branch = response.data.map(data => data.branchName || 'null');
+
+        const uniqueAreaName = ["All", ...new Set(area)];
+        const uniqueBranchName = ["All", ...new Set(branch)];
+        setAreaNameFilterItems(uniqueAreaName);
+        setBranchNameFilterItems(uniqueBranchName);
       })
     } catch (error) {
       console.log(error)
     }
   }, [refreshTable]);
+
+  // Filtering Bar
+  useEffect(() => {
+    let filtered = [...branchDatabase];
+
+    // Filter by Area
+    if (areaFilter && areaFilter !== 'All') {
+      filtered = filtered.filter((item) => item.areaName.includes(areaFilter));
+    }
+
+    // Filter by Branch
+    if (branchFilter && branchFilter !== 'All') {
+      filtered = filtered.filter((item) => item.branchName.includes(branchFilter));
+    }
+
+    // Filter by Status
+    if (statusFilter && statusFilter !== 'All') {
+      filtered = filtered.filter((item) => (statusFilter === 'active' ? item.activeSwitch : !item.activeSwitch));
+    }
+
+    // Sort by Order
+    if (sortOrderFilter === 'Ascending') {
+      filtered.sort((a, b) => a.order - b.order);
+    } else if (sortOrderFilter === 'Descending') {
+      filtered.sort((a, b) => b.order - a.order);
+    }
+
+    setFilteredBranchData(filtered);
+  }, [branchDatabase, areaFilter, branchFilter, sortOrderFilter, statusFilter]);
 
   // Pagination
   const [page, setPage] = useState(0);
@@ -185,65 +225,62 @@ const Branch = () => {
             </Box>
           </Grid>
           {/* Filter Bar */}
-          <Grid item xs={2} md={2}>
+          <Grid item xs={3} md={3}>
             <FormControl fullWidth margin="dense">
               <InputLabel id="area-select">Filtered by Area</InputLabel>
               <Select
                 labelId ="area-select"
                 id      ="area-select"
-                value   ={area}
+                value   ={areaFilter}
                 label   ="Filtered by Area"
-                onChange={(e) => {setArea(e.target.value)}}
+                onChange={(e) => {setAreaFilter(e.target.value)}}
               >
-                <MenuItem value="test.jpg">test.jpg</MenuItem>
-                <MenuItem value="john.jpg">john.jpg</MenuItem>
-                <MenuItem value="jane.jpg">jane.jpg</MenuItem>
-                <MenuItem value="james.jpg">james.jpg</MenuItem>
-                <MenuItem value="mary.jpg">mary.jpg</MenuItem>
-                <MenuItem value="alice.jpg'">alice.jpg</MenuItem>
+                {areaNameFilterItems.map((option, index) => (
+                  <MenuItem key={index} value={option}>{option}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={2} md={2}>
+          <Grid item xs={3} md={3}>
             <FormControl fullWidth margin="dense">
               <InputLabel id="branch-select">Filter by Branch</InputLabel>
               <Select
                 labelId ="branch-select"
                 id      ="branch-select"
-                value   ={branch}
+                value   ={branchFilter}
                 label   ="Filter by Branch"
-                onChange={(e) => {setBranch(e.target.value)}}
+                onChange={(e) => {setBranchFilter(e.target.value)}}
               >
-                <MenuItem value="Subang">Subang</MenuItem>
-                <MenuItem value="Cheras">Cheras</MenuItem>
-                <MenuItem value="Puchong">Puchong</MenuItem>
+                {branchNameFilterItems.map((option, index) => (
+                  <MenuItem key={index} value={option}>{option}</MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={2} md={2}>
+          <Grid item xs={3} md={3}>
             <FormControl fullWidth margin="dense">
               <InputLabel id="sort-Order-select">Sort by Order</InputLabel>
               <Select
                 labelId ="sort-Order-select"
                 id      ="sort-Order-select"
-                value   ={sortOrder}
+                value   ={sortOrderFilter}
                 label   ="Sort by Order"
-                onChange={(e) => {setSortOrder(e.target.value)}}
+                onChange={(e) => {setSortOrderFilter(e.target.value)}}
               >
                 <MenuItem value="Ascending">Ascending</MenuItem>
                 <MenuItem value="Descending">Descending</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={2} md={2}>
+          <Grid item xs={3} md={3}>
             <FormControl fullWidth margin="dense">
               <InputLabel id="status-select">Filtered by Status</InputLabel>
               <Select
                 labelId ="status-select"
                 id      ="status-select"
-                value   ={status}
+                value   ={statusFilter}
                 label   ="Filtered by Status"
-                onChange={(e) => {setStatus(e.target.value)}}
+                onChange={(e) => {setStatusFilter(e.target.value)}}
               >
                 <MenuItem value="active">Active</MenuItem>
                 <MenuItem value="inactive">Inactive</MenuItem>
@@ -269,7 +306,7 @@ const Branch = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {branchDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((data, index) => (
+                {filteredBranchData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((data, index) => (
                   <TableRow key={index}>
                     <TableCell style={{textAlign: "left"}}>{data.areaName}</TableCell>
                     <TableCell style={{textAlign: "left"}}>{data.branchName}</TableCell>
@@ -289,7 +326,7 @@ const Branch = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={branchDatabase.length}
+              count={filteredBranchData.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
