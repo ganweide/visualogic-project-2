@@ -16,6 +16,7 @@ app.use(express.json());
 // Routes
 app.use('/api/branches', require('./routes/branchRoutes'));
 app.use('/api/staff', require('./routes/staffRoutes'));
+app.use('/api/message', require('./routes/messageRoute'));
 
 // Start the server
 app.listen(PORT, () => {
