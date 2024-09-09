@@ -508,7 +508,7 @@ const TipTapEditor = ({ message }) => {
         extensions={extensions}
         content={contentJson}
         onUpdate={({ editor }) => {
-          message(editor.getJSON());
+          message(editor.getHTML());
         }}
       />
       <div>{html}</div>

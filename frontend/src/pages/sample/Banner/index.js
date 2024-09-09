@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import axios from "axios";
+import React, { useState, useEffect, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { makeStyles } from "@material-ui/core/styles";
 import {
   Box,
@@ -38,77 +40,41 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import Styles from "./style";
 const useStyles = makeStyles(Styles);
+const bannerURL = "http://localhost:5000/api/banner"
 
-const PermissionSection = ({ title, permissions, state, setState }) => {
-  const handleChange = (permission) => (e) => {
-    const key = `${title}-${permission}`;
-    setState((prev) => ({ ...prev, [key]: e.target.checked }));
-  };
-
-  return (
-    <Grid container spacing={2} alignItems="center">
-      <Grid item xs={3}>
-        <Typography>{title}</Typography>
-      </Grid>
-      {permissions.map((permission) => (
-        <Grid item xs={3} key={permission}>
-          <FormControlLabel
-            control={<Checkbox checked={state[permission]} onChange={handleChange(permission)} />}
-            label={permission}
-          />
-        </Grid>
-      ))}
-    </Grid>
-  );
-};
-
-const Role = () => {
+const Banner = () => {
   const classes = useStyles();
   const tableHead = ["Name", "Effective Date", "End Date", "View", "Order", "Status", ""];
+  const [bannerDatabase, setBannerDatabase] = useState([]);
+  const [refreshTable, setRefreshTable] = useState([]);
+
+  // Filtering Bar
   const [name, setName]  = useState("");
   const [status, setStatus] = useState("");
   const [sortOrder, setSortOrder] = useState("");
-  const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
-  const [roleName, setRoleName] = useState("");
-  const [allBranch, setAllBranch] = useState(false);
-  const [branch, setBranch] = useState("");
 
-  const roles = [
-    { title: 'Admin-Role', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Banner', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Message', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Staff', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Branch', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Room', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Package', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Member', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Booking', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Member-CheckIn', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Member-QR', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Member-Staff', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Finance-Purchase', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Finance-CheckIn', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Finance-Attendance', permissions: ['View', 'Create', 'Update'] },
-  ];
-  const initialPermissionsState = roles.reduce((acc, { title, permissions }) => {
-    permissions.forEach((permission) => {
-      acc[`${title}-${permission}`] = false;
-    });
-    acc['ActiveInactive'] = false;
-    return acc;
-  }, {});
-  const [permissions, setPermissions] = useState(initialPermissionsState);
+  // Add New Banner Dialog Constants
+  const [dialogImage, setDialogImage] = useState("");
+  const [dialogAlwaysCheckbox, setDialogAlwaysCheckbox] = useState(false);
+  const [dialogDisplayStartDate, setDialogDisplayStartDate] = useState("");
+  const [dialogDisplayEndDate, setDialogDisplayEndDate] = useState("");
+  const [dialogSortOrder, setDialogSortOrder] = useState("");
+  const [dialogActiveSwitch, setDialogActiveSwitch] = useState(true);
 
+  // Retrieve Data
+  useEffect(() => {
+    try {
+      axios.get(bannerURL).then((response) => {
+        setBannerDatabase(response.data);
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }, [refreshTable]);
+
+  // Paginations
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const rows = [
-    { name: 'test.jpg', effectiveDate: '27/08/2024', endDate: '27/08/2025', view: 's3bucket_imageLink1', order: '1', status: 'Active' },
-    { name: 'john.jpg', effectiveDate: '18/07/2024', endDate: '21/07/2025', view: 's3bucket_imageLink2', order: '2', status: 'Inactive' },
-    { name: 'jane.jpg', effectiveDate: '2/11/2024', endDate: '23/11/2025', view: 's3bucket_imageLink3', order: '3', status: 'Active' },
-    { name: 'james.jpg', effectiveDate: '11/03/2024', endDate: '01/04/2025', view: 's3bucket_imageLink4', order: '4', status: 'Active' },
-    { name: 'mary.jpg', effectiveDate: '23/03/2024', endDate: '27/03/2025', view: 's3bucket_imageLink5', order: '5', status: 'Inactive' },
-    { name: 'alice.jpg', effectiveDate: '5/02/2024', endDate: '28/02/2025', view: 's3bucket_imageLink6', order: '6', status: 'Active' },
-  ];
 
   const handleChangePage = (e, newPage) => {
     setPage(newPage);
@@ -119,27 +85,59 @@ const Role = () => {
     setPage(0);
   };
 
-  const handleOpenAddNewRoleDialog = () => {
-    setAddNewRoleDialogOpen(true);
+  // Dialog Actions
+  const [addNewBannerDialogOpen, setAddNewBannerDialogOpen] = useState(false);
+  const handleOpenAddNewBannerDialog = () => {
+    setAddNewBannerDialogOpen(true);
   }
 
-  const handleCloseAddNewRoleDialog = () => {
-    setAddNewRoleDialogOpen(false);
+  const handleCloseAddNewBannerDialog = () => {
+    setAddNewBannerDialogOpen(false);
   }
 
-  const handleClickCheckboxAllBranch = (e) => {
-    setAllBranch(e.target.checked);
+  const handleSaveNewBanner = async () => {
+    try {
+      const data = {
+        image: dialogImage,
+        alwaysCheckbox: dialogAlwaysCheckbox,
+        displayStartDate: dialogDisplayStartDate,
+        displayEndDate: dialogDisplayEndDate,
+        order: dialogSortOrder,
+        activeSwitch: dialogActiveSwitch,
+      };
+
+      const response = await axios.post(bannerURL, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const newBanner = response.data;
+      alert('Banner created successfully!');
+      console.log('New Banner added:', newBanner);
+      setRefreshTable(response.data);
+      handleCloseAddNewBannerDialog();
+    } catch (error) {
+      alert('Failed to save Banner');
+      console.error('Error:', error);
+    }
   }
 
+  // Image Dropzone
+  const onDrop = useCallback((acceptedFiles) => {
+    const image = acceptedFiles[0];
+    setDialogImage(URL.createObjectURL(image));
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: 'image/*',
+  });
+
+  // Switch Actions
   const handleClickSwitchActiveInactive = (e) => {
-    setPermissions((prev) => ({ ...prev, ActiveInactive: e.target.checked }));
+    setDialogActiveSwitch(e.target.checked);
   }
-
-  const handleSaveNewRole = () => {
-    setAddNewRoleDialogOpen(false);
-  }
-
-  console.log(permissions);
 
   return (
     <Box>
@@ -158,7 +156,7 @@ const Role = () => {
               <Button
                 variant="outlined"
                 startIcon={<PersonAddIcon />}
-                onClick={handleOpenAddNewRoleDialog}
+                onClick={handleOpenAddNewBannerDialog}
               >
                 Add New
               </Button>
@@ -233,14 +231,14 @@ const Role = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {bannerDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell style={{textAlign: "left"}}>{row.name}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.effectiveDate}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.endDate}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.view}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.image}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.displayStartDate}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.displayEndDate}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>View Image</TableCell>
                     <TableCell style={{textAlign: "left"}}>{row.order}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.status}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.activeSwitch ? "Active" : "Inactive"}</TableCell>
                     <TableCell style={{textAlign: "center"}}>
                       <IconButton>
                         <EditIcon />
@@ -253,7 +251,7 @@ const Role = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={rows.length}
+              count={bannerDatabase.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -265,8 +263,8 @@ const Role = () => {
       <Dialog
         fullWidth
         maxWidth          ="md"
-        open              ={addNewRoleDialogOpen}
-        onClose           ={handleCloseAddNewRoleDialog}
+        open              ={addNewBannerDialogOpen}
+        onClose           ={handleCloseAddNewBannerDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
@@ -276,70 +274,90 @@ const Role = () => {
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={12}>
+                  <Typography variant='h3'>Image</Typography>
+                </Grid>
+                <Grid item xs={12} md={12}>
+                  <Box
+                    {...getRootProps()}
+                    sx={{
+                      border: '2px dashed #cccccc',
+                      borderRadius: '4px',
+                      padding: '20px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    {dialogImage ? (
+                      <img
+                        src={dialogImage}
+                        alt="Preview"
+                        style={{ maxWidth: '100%', maxHeight: '100%' }}
+                      />
+                    ) : isDragActive ? (
+                      <Typography>Drop the image here ...</Typography>
+                    ) : (
+                      <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                    )}
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <FormControlLabel
+                control={<Checkbox checked={dialogAlwaysCheckbox} onChange={(e) => setDialogAlwaysCheckbox(e.target.checked)} />}
+                label="Always"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
-                onChange={(e) => setRoleName(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                onChange={(e) => setDialogDisplayStartDate(e.target.value)}
                 margin="dense"
-                label="Role Name"
-                type="text"
+                label="Display From"
+                type="date"
                 fullWidth
                 variant="outlined"
-                value={roleName}
+                value={dialogDisplayStartDate}
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                InputLabelProps={{ shrink: true }}
+                onChange={(e) => setDialogDisplayEndDate(e.target.value)}
+                margin="dense"
+                label="Display Until"
+                type="date"
+                fullWidth
+                variant="outlined"
+                value={dialogDisplayEndDate}
               />
             </Grid>
             <Grid item xs={12} md={12}>
-              <FormGroup>
-                <FormControlLabel control={<Checkbox checked={allBranch} onChange={handleClickCheckboxAllBranch} />} label='All Branch' />
-              </FormGroup>
+              <TextField
+                onChange={(e) => setDialogSortOrder(e.target.value)}
+                margin="dense"
+                label="Sort Order"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={dialogSortOrder}
+              />
             </Grid>
-            {!allBranch && (
-              <Grid item xs={12} md={12}>
-                <FormControl fullWidth margin="dense">
-                  <InputLabel id="branch-select">Branch</InputLabel>
-                  <Select
-                    labelId ="branch-select"
-                    id      ="branch-select"
-                    value   ={branch}
-                    label   ="Branch"
-                    onChange={(e) => {setBranch(e.target.value)}}
-                  >
-                    <MenuItem value="Test 1">Test 1</MenuItem>
-                    <MenuItem value="Test 2">Test 2</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              )
-            }
             <Grid item xs={12} md={12}>
               <Divider />
             </Grid>
             <Grid item xs={12} md={12}>
-              {/* Other Permissions */}
-              {/* {roles.map(({ title, permissions }) => (
-                <PermissionSection
-                  key={title}
-                  title={title}
-                  permissions={permissions}
-                  state={generatePermissionsState(title, permissions)}
-                  setState={(updatedState) => setPermissions((prev) => ({ ...prev, ...updatedState }))}
-                />
-              ))} */}
-              {roles.map(({ title, permissions }) => (
-                <PermissionSection
-                  key={title}
-                  title={title}
-                  permissions={permissions}
-                  state={permissions}
-                  setState={setPermissions}
-                />
-              ))}
-              {/* Active/InActive */}
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={3}>
                   <Typography>Active/InActive</Typography>
                 </Grid>
                 <Grid item xs={3}>
                   <Switch
-                    checked={permissions.ActiveInactive}
+                    checked={dialogActiveSwitch}
                     onChange={handleClickSwitchActiveInactive}
                     inputProps={{ 'aria-label': 'controlled' }}
                   />
@@ -349,11 +367,11 @@ const Role = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveNewRole}>Save</Button>
+          <Button onClick={handleSaveNewBanner}>Save</Button>
         </DialogActions>
       </Dialog>
     </Box>
   )
 }
 
-export default Role
+export default Banner

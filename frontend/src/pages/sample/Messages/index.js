@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState, useEffect, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone';
 import { makeStyles } from "@material-ui/core/styles";
@@ -58,8 +59,6 @@ const Messages = () => {
   const [dialogDisplayEndDate, setDialogDisplayEndDate] = useState("");
   const [dialogSortOrder, setDialogSortOrder] = useState("");
   const [dialogActiveSwitch, setDialogActiveSwitch] = useState(true);
-  
-  console.log(dialogMessage);
 
   // Retrieve Data
   useEffect(() => {
@@ -98,34 +97,17 @@ const Messages = () => {
   const handleCreateNewMessage = async () => {
     try {
       const data = {
-        name: dialogName,
-        staffCode: dialogStaffCode,
-        branchName: dialogBranchName,
-        gender: dialogGender,
-        role: dialogRole,
-        joinDate: dialogJoinDate,
-        username: dialogUsername,
-        password: dialogPassword,
-        email: dialogEmail,
-        position: dialogPosition,
-        fullName: dialogFullName,
-        NRIC: dialogNRIC,
-        religion: dialogReligion,
-        mobileNo: dialogMobileNo,
-        martialStatus: dialogMartialStatus,
-        currentAddress: dialogCurrentAddress,
-        bankName: dialogBankName,
-        accountNo: dialogAccountNo,
-        EPFNo: dialogEPFONo,
-        SOCSNo: dialogSOCSNo,
-        incomeTaxNo: dialogIncomeTaxNo,
-        emergencyContactName: dialogEmergencyContactName,
-        emergencyContactRelation: dialogEmergencyRelation,
-        emergencyContact: dialogEmergencyContact,
+        messageType: dialogMessageType,
+        message: dialogMessage,
+        image: dialogImage,
+        alwaysCheckbox: dialogAlwaysCheckbox,
+        displayStartDate: dialogDisplayStartDate,
+        displayEndDate: dialogDisplayEndDate,
+        order: dialogSortOrder,
         activeSwitch: dialogActiveSwitch,
       };
 
-      const response = await axios.post(staffURL, data, {
+      const response = await axios.post(messageURL, data, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -412,16 +394,18 @@ const Messages = () => {
               <Divider />
             </Grid>
             {/* Active/InActive */}
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={3}>
-                <Typography>Active/InActive</Typography>
-              </Grid>
-              <Grid item xs={3}>
-                <Switch
-                  checked={dialogActiveSwitch}
-                  onChange={handleClickSwitchActiveInactive}
-                  inputProps={{ 'aria-label': 'controlled' }}
-                />
+            <Grid item xs={12} md={12}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={3}>
+                  <Typography>Active/InActive</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Switch
+                    checked={dialogActiveSwitch}
+                    onChange={handleClickSwitchActiveInactive}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
