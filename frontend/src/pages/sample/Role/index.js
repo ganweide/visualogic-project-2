@@ -25,10 +25,6 @@ import {
   Checkbox,
   Divider,
   Switch,
-  ListItem,
-  ListItemText,
-  Menu,
-  List,
   IconButton,
   TablePagination,
 } from "@mui/material";
@@ -38,6 +34,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import Styles from "./style";
 const useStyles = makeStyles(Styles);
+const roleURL = "http://localhost:5000/api/role"
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
@@ -67,11 +64,22 @@ const Role = () => {
   const tableHead = ["Role Name", "Status", ""];
   const [name, setName]  = useState("");
   const [status, setStatus] = useState("");
-  const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const [roleName, setRoleName] = useState("");
   const [allBranch, setAllBranch] = useState(false);
   const [branch, setBranch] = useState("");
 
+  // Retrieve Data
+  useEffect(() => {
+    try {
+      axios.get(roleURL).then((response) => {
+        setRoleDatabase(response.data);
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }, [refreshTable]);
+
+  // Role Checkboxes Generation
   const roles = [
     { title: 'Admin-Role', permissions: ['View', 'Create', 'Update'] },
     { title: 'Admin-Banner', permissions: ['View', 'Create', 'Update'] },
@@ -89,6 +97,7 @@ const Role = () => {
     { title: 'Finance-CheckIn', permissions: ['View', 'Create', 'Update'] },
     { title: 'Finance-Attendance', permissions: ['View', 'Create', 'Update'] },
   ];
+
   const initialPermissionsState = roles.reduce((acc, { title, permissions }) => {
     permissions.forEach((permission) => {
       acc[`${title}-${permission}`] = false;
@@ -98,6 +107,7 @@ const Role = () => {
   }, {});
   const [permissions, setPermissions] = useState(initialPermissionsState);
 
+  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const rows = [
@@ -118,6 +128,8 @@ const Role = () => {
     setPage(0);
   };
 
+  // Dialog Actions
+  const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const handleOpenAddNewRoleDialog = () => {
     setAddNewRoleDialogOpen(true);
   }
@@ -126,19 +138,35 @@ const Role = () => {
     setAddNewRoleDialogOpen(false);
   }
 
+  const handleSaveNewRole = async () => {
+    try {
+      const roleData = {
+        name: roleName,
+        allBranchCheckbox: allBranch,
+        ...permissions,
+        activeSwitch: permissions.ActiveInactive,
+      };
+
+      const response = await axios.post('/api/roles', roleData);
+      console.log('Role saved:', response.data);
+      setAddNewRoleDialogOpen(false);
+      // TODO: Add logic to refresh the role list or show a success message
+    } catch (error) {
+      console.error('Error saving role:', error);
+      // TODO: Add error handling, e.g., show an error message to the user
+    }
+  }
+
+  // Checkbox Actions
   const handleClickCheckboxAllBranch = (e) => {
     setAllBranch(e.target.checked);
   }
 
+  // Switch Actions
   const handleClickSwitchActiveInactive = (e) => {
     setPermissions((prev) => ({ ...prev, ActiveInactive: e.target.checked }));
   }
 
-  const handleSaveNewRole = () => {
-    setAddNewRoleDialogOpen(false);
-  }
-
-  console.log(permissions);
 
   return (
     <Box>
