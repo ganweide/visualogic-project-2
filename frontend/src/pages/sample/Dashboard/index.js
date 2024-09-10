@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Grid,
   Card,
@@ -14,16 +14,11 @@ import {
   Paper,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import tableStyle from "./style.js";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   cardContainer: {
     height: "100%",
     cursor: "pointer",
-    border: "2px solid transparent",
-  },
-  activeCard: {
-    border: "2px solid #3f51b5",
   },
   numberContainer: {
     marginTop: 8,
@@ -31,21 +26,16 @@ const useStyles = makeStyles((theme) => ({
   tableContainer: {
     marginTop: 16,
   },
-  ...tableStyle(theme), // Include the table styles here
 }));
 
 const Dashboard = () => {
   const classes = useStyles();
 
-  const [selectedCard, setSelectedCard] = useState("Member Registered");
+  const [selectedCard, setSelectedCard] = useState(null);
 
   const handleCardClick = (cardName) => {
     setSelectedCard(cardName);
   };
-
-  useEffect(() => {
-    setSelectedCard("Member Registered");
-  }, []);
 
   const renderTableContent = () => {
     switch (selectedCard) {
@@ -53,51 +43,24 @@ const Dashboard = () => {
         return (
           <>
             <TableHead>
-              <TableRow className={classes.tableHeadRow}>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.primaryTableHeader}`}
-                >
-                  Date
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.primaryTableHeader}`}
-                >
-                  Name
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.primaryTableHeader}`}
-                >
-                  Mobile No
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.primaryTableHeader}`}
-                >
-                  Email
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.primaryTableHeader}`}
-                >
-                  Gender
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.primaryTableHeader}`}
-                >
-                  Preferred Branch
-                </TableCell>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell>Mobile No</TableCell>
+                <TableCell>Email</TableCell>
+                <TableCell>Gender</TableCell>
+                <TableCell>Preferred Branch</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              <TableRow className={classes.tableBodyRow}>
-                <TableCell className={classes.tableCell}>2024-08-28</TableCell>
-                <TableCell className={classes.tableCell}>John Doe</TableCell>
-                <TableCell className={classes.tableCell}>1234567890</TableCell>
-                <TableCell className={classes.tableCell}>
-                  johndoe@example.com
-                </TableCell>
-                <TableCell className={classes.tableCell}>Male</TableCell>
-                <TableCell className={classes.tableCell}>
-                  Central Branch
-                </TableCell>
+              {/* Replace with dynamic data */}
+              <TableRow>
+                <TableCell>2024-08-28</TableCell>
+                <TableCell>John Doe</TableCell>
+                <TableCell>1234567890</TableCell>
+                <TableCell>johndoe@example.com</TableCell>
+                <TableCell>Male</TableCell>
+                <TableCell>Central Branch</TableCell>
               </TableRow>
             </TableBody>
           </>
@@ -106,43 +69,22 @@ const Dashboard = () => {
         return (
           <>
             <TableHead>
-              <TableRow className={classes.tableHeadRow}>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.warningTableHeader}`}
-                >
-                  Name
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.warningTableHeader}`}
-                >
-                  Gender
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.warningTableHeader}`}
-                >
-                  Role
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.warningTableHeader}`}
-                >
-                  Branch
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.warningTableHeader}`}
-                >
-                  Mobile No
-                </TableCell>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Gender</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Branch</TableCell>
+                <TableCell>Mobile No</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              <TableRow className={classes.tableBodyRow}>
-                <TableCell className={classes.tableCell}>Jane Smith</TableCell>
-                <TableCell className={classes.tableCell}>Female</TableCell>
-                <TableCell className={classes.tableCell}>Manager</TableCell>
-                <TableCell className={classes.tableCell}>
-                  North Branch
-                </TableCell>
-                <TableCell className={classes.tableCell}>0987654321</TableCell>
+              {/* Replace with dynamic data */}
+              <TableRow>
+                <TableCell>Jane Smith</TableCell>
+                <TableCell>Female</TableCell>
+                <TableCell>Manager</TableCell>
+                <TableCell>North Branch</TableCell>
+                <TableCell>0987654321</TableCell>
               </TableRow>
             </TableBody>
           </>
@@ -151,49 +93,28 @@ const Dashboard = () => {
         return (
           <>
             <TableHead>
-              <TableRow className={classes.tableHeadRow}>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.successTableHeader}`}
-                >
-                  Date
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.successTableHeader}`}
-                >
-                  Package Name
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.successTableHeader}`}
-                >
-                  Member Name
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.successTableHeader}`}
-                >
-                  Time
-                </TableCell>
-                <TableCell
-                  className={`${classes.tableHeadCell} ${classes.successTableHeader}`}
-                >
-                  Price
-                </TableCell>
+              <TableRow>
+                <TableCell>Date</TableCell>
+                <TableCell>Package Name</TableCell>
+                <TableCell>Member Name</TableCell>
+                <TableCell>Time</TableCell>
+                <TableCell>Price</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              <TableRow className={classes.tableBodyRow}>
-                <TableCell className={classes.tableCell}>2024-08-28</TableCell>
-                <TableCell className={classes.tableCell}>
-                  Gold Package
-                </TableCell>
-                <TableCell className={classes.tableCell}>John Doe</TableCell>
-                <TableCell className={classes.tableCell}>10:00 AM</TableCell>
-                <TableCell className={classes.tableCell}>$99</TableCell>
+              {/* Replace with dynamic data */}
+              <TableRow>
+                <TableCell>2024-08-28</TableCell>
+                <TableCell>Gold Package</TableCell>
+                <TableCell>John Doe</TableCell>
+                <TableCell>10:00 AM</TableCell>
+                <TableCell>$99</TableCell>
               </TableRow>
             </TableBody>
           </>
         );
       case "Current Duty Staff":
-        return null;
+        return null; // Empty for now
       default:
         return null;
     }
@@ -205,9 +126,7 @@ const Dashboard = () => {
         {/* First Row */}
         <Grid item xs={12} sm={6} md={3}>
           <Card
-            className={`${classes.cardContainer} ${
-              selectedCard === "Member Registered" ? classes.activeCard : ""
-            }`}
+            className={classes.cardContainer}
             onClick={() => handleCardClick("Member Registered")}
           >
             <CardContent>
@@ -222,9 +141,7 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card
-            className={`${classes.cardContainer} ${
-              selectedCard === "Number of Staff" ? classes.activeCard : ""
-            }`}
+            className={classes.cardContainer}
             onClick={() => handleCardClick("Number of Staff")}
           >
             <CardContent>
@@ -239,9 +156,7 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card
-            className={`${classes.cardContainer} ${
-              selectedCard === "Package Registered" ? classes.activeCard : ""
-            }`}
+            className={classes.cardContainer}
             onClick={() => handleCardClick("Package Registered")}
           >
             <CardContent>
@@ -256,9 +171,7 @@ const Dashboard = () => {
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Card
-            className={`${classes.cardContainer} ${
-              selectedCard === "Current Duty Staff" ? classes.activeCard : ""
-            }`}
+            className={classes.cardContainer}
             onClick={() => handleCardClick("Current Duty Staff")}
           >
             <CardContent>
@@ -276,7 +189,7 @@ const Dashboard = () => {
       {/* Second Row - Dynamic Table */}
       {selectedCard && (
         <TableContainer component={Paper} className={classes.tableContainer}>
-          <Table className={classes.table}>{renderTableContent()}</Table>
+          <Table>{renderTableContent()}</Table>
         </TableContainer>
       )}
     </Box>
