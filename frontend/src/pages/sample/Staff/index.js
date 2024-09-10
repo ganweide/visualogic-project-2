@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -9,8 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
-  Switch,
   Table,
   TableBody,
   TableCell,
@@ -23,6 +20,15 @@ import {
   MenuItem,
   Grid,
   Typography,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
+  Divider,
+  Switch,
+  ListItem,
+  ListItemText,
+  Menu,
+  List,
   IconButton,
   TablePagination,
 } from "@mui/material";
@@ -31,120 +37,31 @@ import EditIcon from '@mui/icons-material/Edit';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import Styles from "./style";
-
-const staffURL = "http://localhost:5000/api/staff";
-const branchURL = "http://localhost:5000/api/branches";
 const useStyles = makeStyles(Styles);
 
-const Staff = () => {
+const Role = () => {
   const classes = useStyles();
   const tableHead = ["Name", "Gender", "Role", "Branch", "Mobile No.", "Status", ""];
-  const [staffDatabase, setStaffDatabase] = useState([]);
-  const [branchDatabase, setBranchDatabase] = useState([]);
-  const [filteredStaffData, setFilteredStaffData] = useState([]);
-  const [refreshTable, setRefreshTable] = useState([]);
-  // Filtering Bar
-  const [branchNameFilterItems, setBranchNameFilterItems] = useState([]);
-  const [roleFilterItems, setRoleFilterItems] = useState([]);
-  const [nameFilter, setNameFilter]  = useState("");
-  const [genderFilter, setGenderFilter] = useState("");
-  const [roleFilter, setRoleFilter] = useState("");
-  const [branchFilter, setBranchFilter] = useState("");
-  const [mobileNoFilter, setMobileNoFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [name, setName]  = useState("");
+  const [gender, setGender] = useState("");
+  const [role, setRole] = useState("");
+  const [branch, setBranch] = useState("");
+  const [mobileNo, setMobileNo] = useState("");
+  const [status, setStatus] = useState("");
+  const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
+  const [roleName, setRoleName] = useState("");
+  const [allBranch, setAllBranch] = useState(false);
 
-  // Add New Staff Dialog Constants
-  const [dialogName, setDialogName] = useState([])
-  const [dialogStaffCode, setDialogStaffCode] = useState([])
-  const [dialogBranchNameItems, setDialogBranchNameItems] = useState([]);
-  const [dialogBranchName, setDialogBranchName] = useState([])
-  const [dialogGender, setDialogGender] = useState([])
-  const [dialogRole, setDialogRole] = useState([])
-  const [dialogJoinDate, setDialogJoinDate] = useState([])
-  const [dialogUsername, setDialogUsername] = useState([])
-  const [dialogPassword, setDialogPassword] = useState([])
-  const [dialogEmail, setDialogEmail] = useState([])
-  const [dialogPosition, setDialogPosition] = useState([])
-  const [dialogFullName, setDialogFullName] = useState([])
-  const [dialogNRIC, setDialogNRIC] = useState([])
-  const [dialogReligion, setDialogReligion] = useState([])
-  const [dialogMobileNo, setDialogMobileNo] = useState([])
-  const [dialogMartialStatus, setDialogMartialStatus] = useState([])
-  const [dialogCurrentAddress, setDialogCurrentAddress] = useState([])
-  const [dialogBankName, setDialogBankName] = useState([])
-  const [dialogAccountNo, setDialogAccountNo] = useState([])
-  const [dialogEPFONo, setDialogEPFONo] = useState([])
-  const [dialogSOCSNo, setDialogSOCSNo] = useState([])
-  const [dialogIncomeTaxNo, setDialogIncomeTaxNo] = useState([])
-  const [dialogEmergencyContactName, setDialogEmergencyContactName] = useState([])
-  const [dialogEmergencyRelation, setDialogEmergencyRelation] = useState([])
-  const [dialogEmergencyContact, setDialogEmergencyContact] = useState([])
-  const [dialogActiveSwitch, setDialogActiveSwitch] = useState(true)
-
-  // Retrieve Data
-  useEffect(() => {
-    try {
-      axios.get(staffURL).then((response) => {
-        setStaffDatabase(response.data);
-        const branch = response.data.map(data => data.branchName || 'null');
-        const role = response.data.map(data => data.role || 'null');
-
-        const uniqueBranchName = ['All', ...new Set(branch)];
-        const uniqueRole = ['All', ...new Set(role)];
-        setBranchNameFilterItems(uniqueBranchName);
-        setRoleFilterItems(uniqueRole);
-      })
-    } catch (error) {
-      console.log(error)
-    }
-    try {
-      axios.get(branchURL).then((response) => {
-        setBranchDatabase(response.data);
-        const branch = response.data.map(data => data.branchName || 'null');
-
-        const uniqueBranchName = [...new Set(branch)];
-        setDialogBranchNameItems(uniqueBranchName);
-      })
-    } catch (error) {
-      console.log(error)
-    }
-  }, [refreshTable]);
-
-  // Filtering Bar
-  useEffect(() => {
-    let filtered = [...staffDatabase];
-
-    if (branchFilter && branchFilter !== 'All') {
-      filtered = filtered.filter((item) => item.branchName.includes(branchFilter));
-    }
-
-    if (nameFilter) {
-      filtered = filtered.filter((item) =>
-        (item.name || '').toLowerCase().includes(nameFilter.toLowerCase())
-      );
-    }
-  
-    // Filter by Mobile Number
-    if (mobileNoFilter) {
-      filtered = filtered.filter((item) =>
-        (item.mobileNo || '').includes(mobileNoFilter)
-      );
-    }
-
-    if (genderFilter && genderFilter !== 'All') {
-      filtered = filtered.filter((item) => item.gender.includes(genderFilter));
-    }
-
-    if (statusFilter && statusFilter !== 'All') {
-      filtered = filtered.filter((item) => (statusFilter === 'active' ? item.activeSwitch : !item.activeSwitch));
-    }
-
-    setFilteredStaffData(filtered);
-  }, [branchDatabase, branchFilter, nameFilter, statusFilter, genderFilter, mobileNoFilter]);
-
-  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const rows = [
+    { name: 'Test 1', gender: 'Male', role: 'Admin', branch: 'Cheras', mobileNo: '0123456789', status: 'Active' },
+    { name: 'Test 2', gender: 'Male', role: 'Admin', branch: 'Cheras', mobileNo: '0134567892', status: 'Active' },
+    { name: 'Test 3', gender: 'Female', role: 'Finance', branch: 'Puchong', mobileNo: '0145678923', status: 'Active' },
+    { name: 'Test 4', gender: 'Male', role: 'Finance', branch: 'Subang', mobileNo: '0156789234', status: 'Inactive' },
+    { name: 'Test 5', gender: 'Female', role: 'Member', branch: 'Puchong', mobileNo: '0167892345', status: 'Active' },
+    { name: 'Test 6', gender: 'Male', role: 'Admin', branch: 'Subang', mobileNo: '0178923456', status: 'Inactive' },
+  ];
 
   const handleChangePage = (e, newPage) => {
     setPage(newPage);
@@ -155,91 +72,16 @@ const Staff = () => {
     setPage(0);
   };
 
-  // Dialog Actions
-  const [addNewStaffDialogOpen, setAddNewStaffDialogOpen] = useState(false);
-  const handleOpenAddNewStaffDialog = () => {
-    setAddNewStaffDialogOpen(true);
+  const handleOpenAddNewRoleDialog = () => {
+    setAddNewRoleDialogOpen(true);
   }
 
-  const handleCloseAddNewStaffDialog = () => {
-    setDialogName([]);
-    setDialogStaffCode([]);
-    setDialogBranchName([]);
-    setDialogGender([]);
-    setDialogRole([]);
-    setDialogJoinDate([]);
-    setDialogUsername([]);
-    setDialogPassword([]);
-    setDialogEmail([]);
-    setDialogPosition([]);
-    setDialogFullName([]);
-    setDialogNRIC([]);
-    setDialogReligion([]);
-    setDialogMobileNo([]);
-    setDialogMartialStatus([]);
-    setDialogCurrentAddress([]);
-    setDialogBankName([]);
-    setDialogAccountNo([]);
-    setDialogEPFONo([]);
-    setDialogSOCSNo([]);
-    setDialogIncomeTaxNo([]);
-    setDialogEmergencyContactName([]);
-    setDialogEmergencyRelation([]);
-    setDialogEmergencyContact([]);
-    setDialogActiveSwitch(true);
-    setAddNewStaffDialogOpen(false);
+  const handleCloseAddNewRoleDialog = () => {
+    setAddNewRoleDialogOpen(false);
   }
 
-  const handleSaveNewStaff = async () => {
-    try {
-      const data = {
-        name: dialogName,
-        staffCode: dialogStaffCode,
-        branchName: dialogBranchName,
-        gender: dialogGender,
-        role: dialogRole,
-        joinDate: dialogJoinDate,
-        username: dialogUsername,
-        password: dialogPassword,
-        email: dialogEmail,
-        position: dialogPosition,
-        fullName: dialogFullName,
-        NRIC: dialogNRIC,
-        religion: dialogReligion,
-        mobileNo: dialogMobileNo,
-        martialStatus: dialogMartialStatus,
-        currentAddress: dialogCurrentAddress,
-        bankName: dialogBankName,
-        accountNo: dialogAccountNo,
-        EPFNo: dialogEPFONo,
-        SOCSNo: dialogSOCSNo,
-        incomeTaxNo: dialogIncomeTaxNo,
-        emergencyContactName: dialogEmergencyContactName,
-        emergencyContactRelation: dialogEmergencyRelation,
-        emergencyContact: dialogEmergencyContact,
-        activeSwitch: dialogActiveSwitch,
-      };
-
-      const response = await axios.post(staffURL, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const newStaff = response.data;
-      alert('Staff created successfully!');
-      console.log('New Staff added:', newStaff);
-      setRefreshTable(response.data);
-      handleCloseAddNewStaffDialog();
-    } catch (error) {
-      alert('Failed to save Staff');
-      console.error('Error:', error);
-    }
-  };
-
-  // Switch Actions
-  const handleClickSwitchActiveInactive = (e) => {
-    setDialogActiveSwitch(e.target.checked);
+  const handleSaveNewRole = () => {
+    setAddNewRoleDialogOpen(false);
   }
 
   return (
@@ -259,7 +101,7 @@ const Staff = () => {
               <Button
                 variant="outlined"
                 startIcon={<PersonAddIcon />}
-                onClick={handleOpenAddNewStaffDialog}
+                onClick={handleOpenAddNewRoleDialog}
               >
                 Add New
               </Button>
@@ -267,13 +109,23 @@ const Staff = () => {
           </Grid>
           {/* Filter Bar */}
           <Grid item xs={2} md={2}>
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Filter by Name"
-              value={nameFilter}
-              onChange={(e) => setNameFilter(e.target.value)}
-            />
+            <FormControl fullWidth margin="dense">
+              <InputLabel id="name-select">Filtered by Name</InputLabel>
+              <Select
+                labelId ="name-select"
+                id      ="name-select"
+                value   ={name}
+                label   ="Filtered by Name"
+                onChange={(e) => {setName(e.target.value)}}
+              >
+                <MenuItem value="test.jpg">test.jpg</MenuItem>
+                <MenuItem value="john.jpg">john.jpg</MenuItem>
+                <MenuItem value="jane.jpg">jane.jpg</MenuItem>
+                <MenuItem value="james.jpg">james.jpg</MenuItem>
+                <MenuItem value="mary.jpg">mary.jpg</MenuItem>
+                <MenuItem value="alice.jpg'">alice.jpg</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
           <Grid item xs={2} md={2}>
             <FormControl fullWidth margin="dense">
@@ -281,11 +133,10 @@ const Staff = () => {
               <Select
                 labelId ="gender-select"
                 id      ="gender-select"
-                value   ={genderFilter}
+                value   ={gender}
                 label   ="Filter by Gender"
-                onChange={(e) => {setGenderFilter(e.target.value)}}
+                onChange={(e) => {setGender(e.target.value)}}
               >
-                <MenuItem value="All">All</MenuItem>
                 <MenuItem value="Male">Male</MenuItem>
                 <MenuItem value="Female">Female</MenuItem>
               </Select>
@@ -297,13 +148,13 @@ const Staff = () => {
               <Select
                 labelId ="role-select"
                 id      ="role-select"
-                value   ={roleFilter}
+                value   ={role}
                 label   ="Filter by Role"
-                onChange={(e) => {setRoleFilter(e.target.value)}}
+                onChange={(e) => {setRole(e.target.value)}}
               >
-                {roleFilterItems.map((option, index) => (
-                  <MenuItem key={index} value={option}>{option}</MenuItem>
-                ))}
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="Member">Member</MenuItem>
+                <MenuItem value="Finance">Finance</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -313,24 +164,34 @@ const Staff = () => {
               <Select
                 labelId ="branch-select"
                 id      ="branch-select"
-                value   ={branchFilter}
+                value   ={branch}
                 label   ="Filter by Branch"
-                onChange={(e) => {setBranchFilter(e.target.value)}}
+                onChange={(e) => {setBranch(e.target.value)}}
               >
-                {branchNameFilterItems.map((option, index) => (
-                  <MenuItem key={index} value={option}>{option}</MenuItem>
-                ))}
+                <MenuItem value="Subang">Subang</MenuItem>
+                <MenuItem value="Cheras">Cheras</MenuItem>
+                <MenuItem value="Puchong">Puchong</MenuItem>
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={2} md={2}>
-            <TextField
-              fullWidth
-              margin="dense"
-              label="Filter by Mobile No."
-              value={mobileNoFilter}
-              onChange={(e) => setMobileNoFilter(e.target.value)}
-            />
+            <FormControl fullWidth margin="dense">
+              <InputLabel id="mobile-no-select">Filter by Mobile No.</InputLabel>
+              <Select
+                labelId ="mobile-no-select"
+                id      ="mobile-no-select"
+                value   ={mobileNo}
+                label   ="Filter by Mobile No."
+                onChange={(e) => {setMobileNo(e.target.value)}}
+              >
+                <MenuItem value="0123456789">0123456789</MenuItem>
+                <MenuItem value="0134567892">0134567892</MenuItem>
+                <MenuItem value="0145678923">0145678923</MenuItem>
+                <MenuItem value="0156789234">0156789234</MenuItem>
+                <MenuItem value="0167892345">0167892345</MenuItem>
+                <MenuItem value="0178923456">0178923456</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
           <Grid item xs={2} md={2}>
             <FormControl fullWidth margin="dense">
@@ -338,9 +199,9 @@ const Staff = () => {
               <Select
                 labelId ="status-select"
                 id      ="status-select"
-                value   ={statusFilter}
+                value   ={status}
                 label   ="Filtered by Status"
-                onChange={(e) => {setStatusFilter(e.target.value)}}
+                onChange={(e) => {setStatus(e.target.value)}}
               >
                 <MenuItem value="active">Active</MenuItem>
                 <MenuItem value="inactive">Inactive</MenuItem>
@@ -366,14 +227,14 @@ const Staff = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredStaffData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((data, index) => (
+                {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell style={{textAlign: "left"}}>{data.name}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.gender}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.role}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.branchName}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.mobileNo}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.activeSwitch ? "active" : "inactive"}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.name}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.effectiveDate}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.endDate}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.view}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.order}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.status}</TableCell>
                     <TableCell style={{textAlign: "center"}}>
                       <IconButton>
                         <EditIcon />
@@ -386,7 +247,7 @@ const Staff = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredStaffData.length}
+              count={rows.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
@@ -398,339 +259,35 @@ const Staff = () => {
       <Dialog
         fullWidth
         maxWidth          ="md"
-        open              ={addNewStaffDialogOpen}
-        onClose           ={handleCloseAddNewStaffDialog}
+        open              ={addNewRoleDialogOpen}
+        onClose           ={handleCloseAddNewRoleDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
         <DialogTitle>
-          <Typography>Create Staff</Typography>
+          <Typography>Create Role</Typography>
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogName(e.target.value)}
-                margin="dense"
-                label="Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogName}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogStaffCode(e.target.value)}
-                margin="dense"
-                label="Staff Code"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogStaffCode}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="branch-select">Branch Name</InputLabel>
-                <Select
-                  labelId ="branch-select"
-                  id      ="branch-select"
-                  value   ={dialogBranchName}
-                  label   ="Branch Name"
-                  onChange={(e) => {setDialogBranchName(e.target.value)}}
-                >
-                  {dialogBranchNameItems.map((option, index) => (
-                    <MenuItem key={index} value={option}>{option}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="gender-select">Gender</InputLabel>
-                <Select
-                  labelId ="gender-select"
-                  id      ="gender-select"
-                  value   ={dialogGender}
-                  label   ="Gender"
-                  onChange={(e) => {setDialogGender(e.target.value)}}
-                >
-                  <MenuItem value="Male">Male</MenuItem>
-                  <MenuItem value="Female">Female</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="role-select">Role</InputLabel>
-                <Select
-                  labelId ="role-select"
-                  id      ="role-select"
-                  value   ={dialogRole}
-                  label   ="Role"
-                  onChange={(e) => {setDialogRole(e.target.value)}}
-                >
-                  <MenuItem value="Admin">Admin</MenuItem>
-                  <MenuItem value="Teacher">Teacher</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setDialogJoinDate(e.target.value)}
-                margin="dense"
-                label="Joining Date"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={dialogJoinDate}
-              />
-            </Grid>
             <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={6} md={6}>
               <TextField
-                onChange={(e) => setDialogUsername(e.target.value)}
+                onChange={(e) => setRoleName(e.target.value)}
                 margin="dense"
-                label="Username"
+                label="Role Name"
                 type="text"
                 fullWidth
                 variant="outlined"
-                value={dialogUsername}
+                value={roleName}
               />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogPassword(e.target.value)}
-                margin="dense"
-                label="Password"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogPassword}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogEmail(e.target.value)}
-                margin="dense"
-                label="Email"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogEmail}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogPosition(e.target.value)}
-                margin="dense"
-                label="Position"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogPosition}
-              />
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogFullName(e.target.value)}
-                margin="dense"
-                label="Full Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogFullName}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogNRIC(e.target.value)}
-                margin="dense"
-                label="NRIC"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogNRIC}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogReligion(e.target.value)}
-                margin="dense"
-                label="Religion"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogReligion}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogMobileNo(e.target.value)}
-                margin="dense"
-                label="Mobile No."
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogMobileNo}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
-                <InputLabel id="martial-status-select">Martial Status</InputLabel>
-                <Select
-                  labelId ="martial-status-select"
-                  id      ="martial-status-select"
-                  value   ={dialogMartialStatus}
-                  label   ="Martial Status"
-                  onChange={(e) => {setDialogMartialStatus(e.target.value)}}
-                >
-                  <MenuItem value="Single">Single</MenuItem>
-                  <MenuItem value="Married">Married</MenuItem>
-                  <MenuItem value="Divorced">Divorced</MenuItem>
-                  <MenuItem value="Widowed">Widowed</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogCurrentAddress(e.target.value)}
-                margin="dense"
-                label="Current Address"
-                type="text"
-                fullWidth
-                multiline
-                row={3}
-                variant="outlined"
-                value={dialogCurrentAddress}
-              />
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogBankName(e.target.value)}
-                margin="dense"
-                label="Bank Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogBankName}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogAccountNo(e.target.value)}
-                margin="dense"
-                label="Account No."
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogAccountNo}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogEPFONo(e.target.value)}
-                margin="dense"
-                label="EPFO No."
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogEPFONo}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogSOCSNo(e.target.value)}
-                margin="dense"
-                label="SOCS No."
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogSOCSNo}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogIncomeTaxNo(e.target.value)}
-                margin="dense"
-                label="Income Tax No."
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogIncomeTaxNo}
-              />
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogEmergencyContactName(e.target.value)}
-                margin="dense"
-                label="Emergency Contact Name"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogEmergencyContactName}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogEmergencyRelation(e.target.value)}
-                margin="dense"
-                label="Emergency Relation"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogEmergencyRelation}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogEmergencyContact(e.target.value)}
-                margin="dense"
-                label="Emergency Contact"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogEmergencyContact}
-              />
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6} md={6}>
-                  <Typography>Active/InActive</Typography>
-                </Grid>
-                <Grid item xs={6} md={6}>
-                  <Switch
-                    checked={dialogActiveSwitch}
-                    onChange={handleClickSwitchActiveInactive}
-                    inputProps={{ 'aria-label': 'controlled' }}
-                  />
-                </Grid>
-              </Grid>
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveNewStaff}>Save</Button>
+          <Button onClick={handleSaveNewRole}>Save</Button>
         </DialogActions>
       </Dialog>
     </Box>
   )
 }
 
-export default Staff
+export default Role

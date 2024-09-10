@@ -92,18 +92,22 @@ const Branch = () => {
   useEffect(() => {
     let filtered = [...branchDatabase];
 
+    // Filter by Area
     if (areaFilter && areaFilter !== 'All') {
       filtered = filtered.filter((item) => item.areaName.includes(areaFilter));
     }
 
+    // Filter by Branch
     if (branchFilter && branchFilter !== 'All') {
       filtered = filtered.filter((item) => item.branchName.includes(branchFilter));
     }
 
+    // Filter by Status
     if (statusFilter && statusFilter !== 'All') {
       filtered = filtered.filter((item) => (statusFilter === 'active' ? item.activeSwitch : !item.activeSwitch));
     }
 
+    // Sort by Order
     if (sortOrderFilter === 'Ascending') {
       filtered.sort((a, b) => a.order - b.order);
     } else if (sortOrderFilter === 'Descending') {
@@ -183,7 +187,7 @@ const Branch = () => {
     accept: 'image/*',
   });
 
-  // Switch Actions
+  // Switch Action
   const handleClickSwitchHQ = (e) => {
     setDialogHQSwitch(e.target.checked);
   }
