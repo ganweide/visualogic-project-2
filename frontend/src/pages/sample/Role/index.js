@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -38,7 +39,7 @@ const roleURL = "http://localhost:5000/api/role"
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
-    const key = `${title}-${permission}`;
+    const key = `${title.toLowerCase().replace('-', '')}${permission}`;
     setState((prev) => ({ ...prev, [key]: e.target.checked }));
   };
 
@@ -50,7 +51,12 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
       {permissions.map((permission) => (
         <Grid item xs={3} key={permission}>
           <FormControlLabel
-            control={<Checkbox checked={state[permission]} onChange={handleChange(permission)} />}
+            control={
+              <Checkbox 
+                checked={state[`${title.toLowerCase().replace('-', '')}${permission}`]} 
+                onChange={handleChange(permission)} 
+              />
+            }
             label={permission}
           />
         </Grid>
@@ -62,6 +68,8 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
 const Role = () => {
   const classes = useStyles();
   const tableHead = ["Role Name", "Status", ""];
+  const [roleDatabase, setRoleDatabase] = useState([]);
+  const [refreshTable, setRefreshTable] = useState([]);
   const [name, setName]  = useState("");
   const [status, setStatus] = useState("");
   const [roleName, setRoleName] = useState("");
@@ -102,7 +110,7 @@ const Role = () => {
     permissions.forEach((permission) => {
       acc[`${title}-${permission}`] = false;
     });
-    acc['ActiveInactive'] = false;
+    acc['ActiveInactive'] = true;
     return acc;
   }, {});
   const [permissions, setPermissions] = useState(initialPermissionsState);
@@ -110,14 +118,6 @@ const Role = () => {
   // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const rows = [
-    { name: 'Test Admin', status: 'Active' },
-    { name: 'John Doe', status: 'Inactive' },
-    { name: 'Jane Doe', status: 'Active' },
-    { name: 'James Smith', status: 'Active' },
-    { name: 'Mary Smith', status: 'Inactive' },
-    { name: 'Alice', status: 'Active' },
-  ];
 
   const handleChangePage = (e, newPage) => {
     setPage(newPage);
@@ -140,15 +140,31 @@ const Role = () => {
 
   const handleSaveNewRole = async () => {
     try {
+      const transformPermissions = (permissions) => {
+        const transformed = {};
+        Object.entries(permissions).forEach(([key, value]) => {
+          if (key === 'ActiveInactive') {
+            transformed['activeSwitch'] = value;
+          } else {
+            const parts = key.split('-');
+            const newKey = parts[0].toLowerCase() + parts.slice(1).join('');
+            transformed[newKey] = value;
+          }
+        });
+        return transformed;
+      };
+  
       const roleData = {
         name: roleName,
         allBranchCheckbox: allBranch,
-        ...permissions,
-        activeSwitch: permissions.ActiveInactive,
+        ...transformPermissions(permissions),
       };
 
-      const response = await axios.post('/api/roles', roleData);
+      console.log('Role data to be saved:', roleData);
+
+      const response = await axios.post(roleURL, roleData);
       console.log('Role saved:', response.data);
+      setRefreshTable(response.data);
       setAddNewRoleDialogOpen(false);
       // TODO: Add logic to refresh the role list or show a success message
     } catch (error) {
@@ -245,7 +261,7 @@ const Role = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {roleDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
                     <TableCell style={{textAlign: "left"}}>{row.name}</TableCell>
                     <TableCell style={{textAlign: "left"}}>{row.status}</TableCell>
@@ -261,7 +277,7 @@ const Role = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={rows.length}
+              count={roleDatabase.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
