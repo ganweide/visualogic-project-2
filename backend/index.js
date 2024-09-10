@@ -19,6 +19,7 @@ app.use('/api/staff', require('./routes/staffRoutes'));
 app.use('/api/message', require('./routes/messageRoutes'));
 app.use('/api/banner', require('./routes/bannerRoutes'));
 app.use('/api/role', require('./routes/roleRoutes'));
+app.use('/api/floor', require('./routes/floorRoutes'));
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

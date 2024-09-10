@@ -42,6 +42,7 @@ const Branch = () => {
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [filteredBranchData, setFilteredBranchData] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  
   // Filtering Bar
   const [areaNameFilterItems, setAreaNameFilterItems] = useState([]);
   const [branchNameFilterItems, setBranchNameFilterItems] = useState([]);
