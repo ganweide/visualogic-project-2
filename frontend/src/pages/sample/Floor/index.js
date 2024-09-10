@@ -181,11 +181,12 @@ const Floor = () => {
     }
   };
 
+  // Switch Actions
   const handleActiveSwitchChange = (e) => {
     setDialogActiveSwitch(e.target.checked);
   };
 
-  // UseDropzone hook
+  // Image Dropzone
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: "image/*",
     onDrop: (acceptedFiles) => {
@@ -198,7 +199,6 @@ const Floor = () => {
     },
   });
 
-  // Destructure getRootProps and getInputProps
   const dropzoneProps = getRootProps();
   const inputProps = getInputProps();
 
