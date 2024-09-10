@@ -50,7 +50,7 @@ const Branch = () => {
   const [sortOrderFilter, setSortOrderFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
 
-  // Add New Branch Dialog constants
+  // Add New Branch Dialog Constants
   const [dialogAreaName, setDialogAreaName]                       = useState("");
   const [dialogBranchName, setDialogBranchName]                   = useState("");
   const [dialogBranchCode, setDialogBranchCode]                   = useState("");

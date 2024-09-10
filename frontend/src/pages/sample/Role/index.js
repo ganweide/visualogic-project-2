@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -25,10 +26,6 @@ import {
   Checkbox,
   Divider,
   Switch,
-  ListItem,
-  ListItemText,
-  Menu,
-  List,
   IconButton,
   TablePagination,
 } from "@mui/material";
@@ -38,10 +35,11 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import Styles from "./style";
 const useStyles = makeStyles(Styles);
+const roleURL = "http://localhost:5000/api/role"
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
-    const key = `${title}-${permission}`;
+    const key = `${title.toLowerCase().replace('-', '')}${permission}`;
     setState((prev) => ({ ...prev, [key]: e.target.checked }));
   };
 
@@ -53,7 +51,12 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
       {permissions.map((permission) => (
         <Grid item xs={3} key={permission}>
           <FormControlLabel
-            control={<Checkbox checked={state[permission]} onChange={handleChange(permission)} />}
+            control={
+              <Checkbox 
+                checked={state[`${title.toLowerCase().replace('-', '')}${permission}`]} 
+                onChange={handleChange(permission)} 
+              />
+            }
             label={permission}
           />
         </Grid>
@@ -65,13 +68,26 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
 const Role = () => {
   const classes = useStyles();
   const tableHead = ["Role Name", "Status", ""];
+  const [roleDatabase, setRoleDatabase] = useState([]);
+  const [refreshTable, setRefreshTable] = useState([]);
   const [name, setName]  = useState("");
   const [status, setStatus] = useState("");
-  const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const [roleName, setRoleName] = useState("");
   const [allBranch, setAllBranch] = useState(false);
   const [branch, setBranch] = useState("");
 
+  // Retrieve Data
+  useEffect(() => {
+    try {
+      axios.get(roleURL).then((response) => {
+        setRoleDatabase(response.data);
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }, [refreshTable]);
+
+  // Role Checkboxes Generation
   const roles = [
     { title: 'Admin-Role', permissions: ['View', 'Create', 'Update'] },
     { title: 'Admin-Banner', permissions: ['View', 'Create', 'Update'] },
@@ -89,25 +105,19 @@ const Role = () => {
     { title: 'Finance-CheckIn', permissions: ['View', 'Create', 'Update'] },
     { title: 'Finance-Attendance', permissions: ['View', 'Create', 'Update'] },
   ];
+
   const initialPermissionsState = roles.reduce((acc, { title, permissions }) => {
     permissions.forEach((permission) => {
       acc[`${title}-${permission}`] = false;
     });
-    acc['ActiveInactive'] = false;
+    acc['ActiveInactive'] = true;
     return acc;
   }, {});
   const [permissions, setPermissions] = useState(initialPermissionsState);
 
+  // Pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const rows = [
-    { name: 'Test Admin', status: 'Active' },
-    { name: 'John Doe', status: 'Inactive' },
-    { name: 'Jane Doe', status: 'Active' },
-    { name: 'James Smith', status: 'Active' },
-    { name: 'Mary Smith', status: 'Inactive' },
-    { name: 'Alice', status: 'Active' },
-  ];
 
   const handleChangePage = (e, newPage) => {
     setPage(newPage);
@@ -118,6 +128,8 @@ const Role = () => {
     setPage(0);
   };
 
+  // Dialog Actions
+  const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const handleOpenAddNewRoleDialog = () => {
     setAddNewRoleDialogOpen(true);
   }
@@ -126,19 +138,51 @@ const Role = () => {
     setAddNewRoleDialogOpen(false);
   }
 
+  const handleSaveNewRole = async () => {
+    try {
+      const transformPermissions = (permissions) => {
+        const transformed = {};
+        Object.entries(permissions).forEach(([key, value]) => {
+          if (key === 'ActiveInactive') {
+            transformed['activeSwitch'] = value;
+          } else {
+            const parts = key.split('-');
+            const newKey = parts[0].toLowerCase() + parts.slice(1).join('');
+            transformed[newKey] = value;
+          }
+        });
+        return transformed;
+      };
+  
+      const roleData = {
+        name: roleName,
+        allBranchCheckbox: allBranch,
+        ...transformPermissions(permissions),
+      };
+
+      console.log('Role data to be saved:', roleData);
+
+      const response = await axios.post(roleURL, roleData);
+      console.log('Role saved:', response.data);
+      setRefreshTable(response.data);
+      setAddNewRoleDialogOpen(false);
+      // TODO: Add logic to refresh the role list or show a success message
+    } catch (error) {
+      console.error('Error saving role:', error);
+      // TODO: Add error handling, e.g., show an error message to the user
+    }
+  }
+
+  // Checkbox Actions
   const handleClickCheckboxAllBranch = (e) => {
     setAllBranch(e.target.checked);
   }
 
+  // Switch Actions
   const handleClickSwitchActiveInactive = (e) => {
     setPermissions((prev) => ({ ...prev, ActiveInactive: e.target.checked }));
   }
 
-  const handleSaveNewRole = () => {
-    setAddNewRoleDialogOpen(false);
-  }
-
-  console.log(permissions);
 
   return (
     <Box>
@@ -217,7 +261,7 @@ const Role = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
+                {roleDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
                     <TableCell style={{textAlign: "left"}}>{row.name}</TableCell>
                     <TableCell style={{textAlign: "left"}}>{row.status}</TableCell>
@@ -233,7 +277,7 @@ const Role = () => {
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={rows.length}
+              count={roleDatabase.length}
               rowsPerPage={rowsPerPage}
               page={page}
               onPageChange={handleChangePage}
