@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
-  messageType: { type: String, required: true },
-  message: { type: String, required: true },
-  image: { type: String },
-  alwaysCheckbox: { type: Boolean, default: false },
-  displayStartDate: { type: Date, required: true },
-  displayEndDate: { type: Date, required: true },
-  order: { type: String, required: true },
-  activeSwitch: { type: Boolean, default: true},
+  msg: { type: String, required: true },
+  msg_type: { type: String, required: true },
+  image_url: { type: String },
+  image_data_url: { type: String },
+  startdate: { type: Date },
+  enddate: { type: Date },
+  status_active: { type: Boolean, required: true },
+  allways: { type: Boolean, required: true },
+  sortorder: { type: Number, default: 1 },
 });
 
 const Message = mongoose.model('Message', messageSchema);
