@@ -333,8 +333,8 @@ const Room = () => {
                     <MenuItem value="">
                       <em>All</em>
                     </MenuItem>
-                    <MenuItem value="Active">Male</MenuItem>
-                    <MenuItem value="Inactive">Female</MenuItem>
+                    <MenuItem value="Male">Male</MenuItem>
+                    <MenuItem value="Female">Female</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -365,61 +365,62 @@ const Room = () => {
               </Grid>
             </Grid>
 
-            <Grid container spacing={2} mb={2}></Grid>
+            <Grid container spacing={2} mb={2}>
             {/* Room Table */}
-            <TableContainer>
-              <Table>
-                <TableHead>
-                <TableRow className={classes.tableHeadRow}>
-                  {tableHead.map((prop) => (
-                    <TableCell
-                      className ={classes.tableCell + classes.tableHeadCell}
-                      key       ={prop}
-                      style     ={{
-                        textAlign: "left",
-                      }}
-                    >
-                      {prop}
-                    </TableCell>
-                  ))}
-                </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredRoomData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((room) => (
-                      <TableRow key={room.id}>
-                        <TableCell>{room.number}</TableCell>
-                        <TableCell>{room.floor}</TableCell>
-                        <TableCell>{room.branch}</TableCell>
-                        <TableCell>{room.noOfPerson}</TableCell>
-                        <TableCell>{room.gender}</TableCell>
-                        <TableCell>{room.order}</TableCell>
-                        <TableCell>
-                          <Switch checked={room.activeSwitch} disabled />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton>
-                            <EditIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                  <TableRow className={classes.tableHeadRow}>
+                    {tableHead.map((prop) => (
+                      <TableCell
+                        className ={classes.tableCell + classes.tableHeadCell}
+                        key       ={prop}
+                        style     ={{
+                          textAlign: "left",
+                        }}
+                      >
+                        {prop}
+                      </TableCell>
                     ))}
-                </TableBody>
-              </Table>
-              <TablePagination
-                component="div"
-                count={filteredRoomData.length}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-            </TableContainer>
+                  </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredRoomData
+                      .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                      .map((room) => (
+                        <TableRow key={room.id}>
+                          <TableCell>{room.number}</TableCell>
+                          <TableCell>{room.floor}</TableCell>
+                          <TableCell>{room.branch}</TableCell>
+                          <TableCell>{room.noOfPerson}</TableCell>
+                          <TableCell>{room.gender}</TableCell>
+                          <TableCell>{room.order}</TableCell>
+                          <TableCell>
+                            <Switch checked={room.activeSwitch} disabled />
+                          </TableCell>
+                          <TableCell>
+                            <IconButton>
+                              <EditIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+                <TablePagination
+                  component="div"
+                  count={filteredRoomData.length}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  rowsPerPage={rowsPerPage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                />
+              </TableContainer>
+            </Grid>
           </Grid>
         </Grid>
       </Card>
-      {/* Add New Room Dialog */}{" "}
+      {/* Add New Room Dialog */}
       <Dialog
         fullWidth
         maxWidth="md"
@@ -443,40 +444,34 @@ const Room = () => {
             </Grid>
             <Grid item xs={12} md={12}>
               <FormControl fullWidth margin="dense">
-                {" "}
-                <InputLabel>Floor</InputLabel>{" "}
+                <InputLabel>Floor</InputLabel>
                 <Select
                   value={dialogFloor}
                   onChange={(e) => setDialogFloor(e, "floor")}
                   label="Floor"
                 >
-                  {""}
                   {floorData.map((floor) => (
                     <MenuItem key={floor.id} value={floor.name}>
-                      {" "}
-                      {floor.name}{" "}
+                      {floor.name}
                     </MenuItem>
-                  ))}{" "}
-                </Select>{" "}
+                  ))}
+                </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
               <FormControl fullWidth margin="dense">
-                {" "}
-                <InputLabel>Branch</InputLabel>{" "}
+                <InputLabel>Branch</InputLabel>
                 <Select
                   value={dialogBranch}
                   onChange={(e) => handleDialogInputChange(e, "branch")}
                   label="Branch"
                 >
-                  {" "}
                   {branchData.map((branch) => (
                     <MenuItem key={branch.id} value={branch.name}>
-                      {" "}
-                      {branch.name}{" "}
+                      {branch.name}
                     </MenuItem>
-                  ))}{" "}
-                </Select>{" "}
+                  ))}
+                </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
@@ -491,7 +486,7 @@ const Room = () => {
             </Grid>
             <Grid item xs={12} md={12}>
               <FormControl fullWidth margin="dense">
-                <InputLabel>Gender</InputLabel>{" "}
+                <InputLabel>Gender</InputLabel>
                 <Select
                 value={dialogGender}
                 onChange={(e) => handleDialogInputChange(e, "gender")}
@@ -545,28 +540,25 @@ const Room = () => {
             </Grid>
             <Grid item xs={12} md={12}>
               <Box display="flex" alignItems="center" mt={2}>
-                {" "}
-                <Typography>Active</Typography>{" "}
+                
+                <Typography>Active</Typography>
                 <Switch
                   checked={dialogActiveSwitch}
                   onChange={handleActiveSwitchChange}
-                />{" "}
+                />
               </Box>
             </Grid>
           </Grid>
-        </DialogContent>{" "}
+        </DialogContent>
         <DialogActions>
-          {" "}
           <Button onClick={handleCloseAddNewRoom} color="secondary">
-            {" "}
-            Cancel{" "}
-          </Button>{" "}
+            Cancel
+          </Button>
           <Button onClick={handleSaveNewRoom} color="primary">
-            {" "}
-            Save{" "}
-          </Button>{" "}
-        </DialogActions>{" "}
-      </Dialog>{" "}
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
