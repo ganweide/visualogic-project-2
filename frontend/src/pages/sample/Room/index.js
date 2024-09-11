@@ -25,7 +25,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Menu,
+  Divider,
 } from "@mui/material";
 import {
   PersonAdd as PersonAddIcon,
@@ -37,7 +37,7 @@ import Styles from "./style";
 
 const roomURL = "http://localhost:5000/api/room";
 const floorURL = "http://localhost:5000/api/floor";
-const branchURL = "http://localhost:5000/api/branch";
+const branchURL = "http://localhost:5000/api/branches";
 const useStyles = makeStyles(Styles);
 
 const Room = () => {
@@ -254,7 +254,7 @@ const Room = () => {
           {/* Header */}
           <Grid item xs={12} sm={12}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="h1">Room</Typography>
+              <Typography variant="h1">Room Table</Typography>
               {/* Add Floor Button */}
               <Button
                 variant="outlined"
@@ -428,10 +428,46 @@ const Room = () => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle>Add New</DialogTitle>
+        <DialogTitle>
+          <Typography>Add New Room</Typography>
+        </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Branch</InputLabel>
+                <Select
+                  value={dialogBranch}
+                  onChange={(e) => handleDialogInputChange(e, "branch")}
+                  label="Branch"
+                >
+                  
+                  {branchData.map((branch) => (
+                    <MenuItem key={branch.id} value={branch.name}>
+                      
+                      {branch.branchName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Floor</InputLabel>
+                <Select
+                  value={dialogFloor}
+                  onChange={(e) => setDialogFloor(e, "floor")}
+                  label="Floor"
+                >
+                  {floorData.map((floor) => (
+                    <MenuItem key={floor.id} value={floor.name}>
+                      {floor.floorNo}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
                 label="Room No"
                 variant="outlined"
@@ -441,45 +477,7 @@ const Room = () => {
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
-              <FormControl fullWidth margin="dense">
-                {" "}
-                <InputLabel>Floor</InputLabel>{" "}
-                <Select
-                  value={dialogFloor}
-                  onChange={(e) => setDialogFloor(e, "floor")}
-                  label="Floor"
-                >
-                  {""}
-                  {floorData.map((floor) => (
-                    <MenuItem key={floor.id} value={floor.name}>
-                      {" "}
-                      {floor.name}{" "}
-                    </MenuItem>
-                  ))}{" "}
-                </Select>{" "}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <FormControl fullWidth margin="dense">
-                {" "}
-                <InputLabel>Branch</InputLabel>{" "}
-                <Select
-                  value={dialogBranch}
-                  onChange={(e) => handleDialogInputChange(e, "branch")}
-                  label="Branch"
-                >
-                  {" "}
-                  {branchData.map((branch) => (
-                    <MenuItem key={branch.id} value={branch.name}>
-                      {" "}
-                      {branch.name}{" "}
-                    </MenuItem>
-                  ))}{" "}
-                </Select>{" "}
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
               <TextField
                 label="No of Person"
                 variant="outlined"
@@ -489,21 +487,22 @@ const Room = () => {
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
               <FormControl fullWidth margin="dense">
-                <InputLabel>Gender</InputLabel>{" "}
+                <InputLabel>Gender</InputLabel>
                 <Select
                 value={dialogGender}
                 onChange={(e) => handleDialogInputChange(e, "gender")}
                 label="Gender"
                 >
-                  <MenuItem value="">
-                  <em>None</em>
-                  </MenuItem>
+                  <MenuItem value="Both">Both</MenuItem>
                   <MenuItem value="Male">Male</MenuItem>
                   <MenuItem value="Female">Female</MenuItem>
                 </Select>
               </FormControl>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
             </Grid>
             <Grid item xs={12} md={12}>
               <Box
@@ -534,6 +533,9 @@ const Room = () => {
               )}
             </Grid>
             <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
               <TextField
                 label="Order"
                 variant="outlined"
@@ -545,28 +547,25 @@ const Room = () => {
             </Grid>
             <Grid item xs={12} md={12}>
               <Box display="flex" alignItems="center" mt={2}>
-                {" "}
-                <Typography>Active</Typography>{" "}
+                <Typography>Active</Typography>
                 <Switch
                   checked={dialogActiveSwitch}
                   onChange={handleActiveSwitchChange}
-                />{" "}
+                />
               </Box>
             </Grid>
           </Grid>
-        </DialogContent>{" "}
+        </DialogContent>
         <DialogActions>
-          {" "}
           <Button onClick={handleCloseAddNewRoom} color="secondary">
-            {" "}
-            Cancel{" "}
-          </Button>{" "}
+            Cancel
+          </Button>
           <Button onClick={handleSaveNewRoom} color="primary">
-            {" "}
-            Save{" "}
-          </Button>{" "}
-        </DialogActions>{" "}
-      </Dialog>{" "}
+            
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
