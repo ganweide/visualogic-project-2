@@ -232,6 +232,7 @@ const Branch = () => {
                 label   ="Filtered by Area"
                 onChange={(e) => {setAreaFilter(e.target.value)}}
               >
+                <MenuItem value="">None</MenuItem>
                 {areaNameFilterItems.map((option, index) => (
                   <MenuItem key={index} value={option}>{option}</MenuItem>
                 ))}
@@ -248,6 +249,7 @@ const Branch = () => {
                 label   ="Filter by Branch"
                 onChange={(e) => {setBranchFilter(e.target.value)}}
               >
+                <MenuItem value="">None</MenuItem>
                 {branchNameFilterItems.map((option, index) => (
                   <MenuItem key={index} value={option}>{option}</MenuItem>
                 ))}
@@ -264,6 +266,7 @@ const Branch = () => {
                 label   ="Sort by Order"
                 onChange={(e) => {setSortOrderFilter(e.target.value)}}
               >
+                <MenuItem value="">None</MenuItem>
                 <MenuItem value="Ascending">Ascending</MenuItem>
                 <MenuItem value="Descending">Descending</MenuItem>
               </Select>
@@ -279,6 +282,7 @@ const Branch = () => {
                 label   ="Filtered by Status"
                 onChange={(e) => {setStatusFilter(e.target.value)}}
               >
+                <MenuItem value="">None</MenuItem>
                 <MenuItem value="active">Active</MenuItem>
                 <MenuItem value="inactive">Inactive</MenuItem>
               </Select>
