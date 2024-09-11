@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -231,21 +231,15 @@ const Room = () => {
   };
 
   // Use Dropzone
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/*",
-    onDrop: (acceptedFiles) => {
-      const file = acceptedFiles[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        setDialogPicture(reader.result);
-      };
-      reader.readAsDataURL(file);
-    },
-  });
+  const onDrop = useCallback((acceptedFiles) => {
+    const image = acceptedFiles[0];
+    setDialogPicture(URL.createObjectURL(image));
+  }, []);
 
-  // Destroy Dropzone
-  const dropzoneProps = getRootProps();
-  const inputProps = getInputProps();
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: 'image/*',
+  });
 
   return (
     <Box>
@@ -501,33 +495,31 @@ const Room = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
-              <Box
-                {...dropzoneProps}
-                sx={{
-                  border: "2px dashed #ddd",
-                  borderRadius: 2,
-                  padding: 2,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  mt: 2,
-                }}
-              >
-                <input {...inputProps} />
-                <Typography>
-                  Drag &apos;n&lsquo; drop a picture here, or click to select
-                  one
-                </Typography>
-              </Box>
-              {dialogPicture && (
-                <Box sx={{ mt: 2 }}>
-                  <img
-                    src={dialogPicture}
-                    alt="Preview"
-                    style={{ maxWidth: "100%", height: "auto" }}
-                  />
-                </Box>
-              )}
-            </Grid>
+                  <Box
+                    {...getRootProps()}
+                    sx={{
+                      border: '2px dashed #cccccc',
+                      borderRadius: '4px',
+                      padding: '20px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    {dialogPicture ? (
+                      <img
+                        src={dialogPicture}
+                        alt="Preview"
+                        style={{ maxWidth: '100%', maxHeight: '100%' }}
+                      />
+                    ) : isDragActive ? (
+                      <Typography>Drop the image here ...</Typography>
+                    ) : (
+                      <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                    )}
+                  </Box>
+                </Grid>
             <Grid item xs={12} md={12}>
               <TextField
                 label="Order"
