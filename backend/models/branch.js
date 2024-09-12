@@ -1,26 +1,27 @@
 const mongoose = require('mongoose');
 
 const branchSchema = new mongoose.Schema({
-  company_name: { type: String, required: true },
-  branch_name: { type: String, required: true },
   branch_code: { type: String, required: true },
-  whatsappno: { type: String, required: true },
-  operating_from_hours: { type: Date, required: true, timestamps: true },
-  operating_to_hours: { type: Date, required: true, timestamps: true },
+  branch_name: { type: String, required: true },
+  area_name: { type: String, required: true },
   address: { type: String, required: true },
   google_link: { type: String, required: false },
   waze_link: { type: String, required: false },
+  operating_from_hours: { type: Date, required: true, timestamps: true },
+  operating_to_hours: { type: Date, required: true, timestamps: true },
+  whatsappno: { type: String, required: true },
   staff: { type: mongoose.Schema.Types.ObjectId, ref: 'staff' },
-  image_url: { type: String },
-  image_data: { type: String },
   paymentkey: { type: String },
   apikey: { type: String },
-  hqbanch: { type: Boolean, required: true },
-  sst: { type: Boolean, required: true },
-  sst_percent: { type: Number },
-  createdAt: { type: Date, default: Date.now },
+  tax: { type: Boolean, required: true },
+  tax_percent: { type: Number },
+  branch_percent: { type: Number },
+  image_url: { type: String },
+  image_data: { type: String },
+  hqbranch: { type: Boolean, required: true },
   sortorder: { type: Number, default: 1 },
-  status_active: { type: Boolean, required: true }
+  status_active: { type: Boolean, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
 const Branch = mongoose.model('Branch', branchSchema);

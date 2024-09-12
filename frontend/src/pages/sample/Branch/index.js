@@ -144,7 +144,7 @@ const Branch = () => {
   const handleSaveNewBranch = async () => {
     try {
       const data = {
-        areaName: dialogAreaName,
+        area_name: dialogAreaName,
         branch_name: dialogBranchName,
         branch_code: dialogBranchCode,
         whatsappno: dialogWhatsappNo,
@@ -155,13 +155,14 @@ const Branch = () => {
         address: dialogAddress,
         google_link: dialogGoogleLink,
         waze_link: dialogWazeLink,
-        contact: dialogContact,
+        staff: dialogContact,
         sortorder: dialogOrder,
         image_url: dialogImageUrl,
         image_data: dialogImageData,
         hqbranch: dialogHQSwitch,
         tax: dialogTaxSwitch,
-        taxpercent: dialogTaxPercent,
+        tax_percent: dialogTaxPercent,
+        branch_percent: dialogOwnBranchPercent,
         status_active: dialogActiveSwitch,
       };
 
