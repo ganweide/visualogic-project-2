@@ -31,6 +31,7 @@ import {
 } from "@mui/material";
 
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 import Styles from "./style";
@@ -39,7 +40,9 @@ const roleURL = "http://localhost:5000/api/role"
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
-    const key = `${title.toLowerCase().replace('-', '')}${permission}`;
+    const key = `${title}${permission}`;
+    // Ensure the first letter is lowercase, but keep the rest as is
+    const formattedKey = key.charAt(0).toLowerCase() + key.slice(1);
     setState((prev) => ({ ...prev, [key]: e.target.checked }));
   };
 
@@ -108,7 +111,10 @@ const Role = () => {
 
   const initialPermissionsState = roles.reduce((acc, { title, permissions }) => {
     permissions.forEach((permission) => {
-      acc[`${title}-${permission}`] = false;
+      const key = `${title}${permission}`;
+      // Ensure the first letter is lowercase, but keep the rest as is
+      const formattedKey = key.charAt(0).toLowerCase() + key.slice(1);
+      acc[formattedKey] = false;
     });
     acc['ActiveInactive'] = true;
     return acc;
@@ -144,10 +150,12 @@ const Role = () => {
         const transformed = {};
         Object.entries(permissions).forEach(([key, value]) => {
           if (key === 'ActiveInactive') {
-            transformed['activeSwitch'] = value;
+            transformed['roleStatus'] = value;
           } else {
             const parts = key.split('-');
+            console.log("newpart", parts);
             const newKey = parts[0].toLowerCase() + parts.slice(1).join('');
+            console.log("newKye", newKey);
             transformed[newKey] = value;
           }
         });
@@ -155,12 +163,14 @@ const Role = () => {
       };
   
       const roleData = {
-        name: roleName,
-        allBranchCheckbox: allBranch,
+        roleName: roleName,
+        allBranchStatus: allBranch,
+        branchName: branch ? branch : null,
+        roleStatus: permissions.ActiveInactive,
         ...transformPermissions(permissions),
       };
 
-      console.log('Role data to be saved:', roleData);
+      console.log('Role data to be saved:', JSON.stringify(roleData, null, 2));
 
       const response = await axios.post(roleURL, roleData);
       console.log('Role saved:', response.data);
@@ -263,11 +273,14 @@ const Role = () => {
               <TableBody>
                 {roleDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
                   <TableRow key={index}>
-                    <TableCell style={{textAlign: "left"}}>{row.name}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.status}</TableCell>
-                    <TableCell style={{textAlign: "center"}}>
+                    <TableCell style={{textAlign: "left"}}>{row.roleName}</TableCell>
+                    <TableCell style={{textAlign: "left"}}>{row.roleStatus ? "active" : "inactive"}</TableCell>
+                    <TableCell style={{textAlign: "right"}}>
                       <IconButton>
                         <EditIcon />
+                      </IconButton>
+                      <IconButton>
+                        <DeleteIcon />
                       </IconButton>
                     </TableCell>
                   </TableRow>
@@ -327,8 +340,11 @@ const Role = () => {
                     label   ="Branch"
                     onChange={(e) => {setBranch(e.target.value)}}
                   >
-                    <MenuItem value="Test 1">Test 1</MenuItem>
-                    <MenuItem value="Test 2">Test 2</MenuItem>
+                    {
+                      roleDatabase.map((row, index) => (
+                        <MenuItem key={index} value={row.branch}>{row.branch}</MenuItem>
+                      ))
+                    }
                   </Select>
                 </FormControl>
               </Grid>
