@@ -1,6 +1,5 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react'
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Box,
   Button,
@@ -34,15 +33,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
-import Styles from "./style";
-import { TrustedAdvisor } from 'aws-sdk';
-const useStyles = makeStyles(Styles);
 const roleURL = "http://localhost:5000/api/role"
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
     const key = `${title}${permission}`;
-    // Ensure the first letter is lowercase, but keep the rest as is
     const formattedKey = key.charAt(0).toLowerCase() + key.slice(1);
     setState((prev) => ({ ...prev, [key]: e.target.checked }));
   };
