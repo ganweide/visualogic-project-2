@@ -355,30 +355,34 @@ const Messages = () => {
                 label="Always"
               />
             </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setDialogDisplayStartDate(e.target.value)}
-                margin="dense"
-                label="Display From"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={dialogDisplayStartDate}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setDialogDisplayEndDate(e.target.value)}
-                margin="dense"
-                label="Display Until"
-                type="date"
-                fullWidth
-                variant="outlined"
-                value={dialogDisplayEndDate}
-              />
-            </Grid>
+            {!dialogAlwaysCheckbox && (
+              <>
+                <Grid item xs={6} md={6}>
+                  <TextField
+                    InputLabelProps={{ shrink: true }}
+                    onChange={(e) => setDialogDisplayStartDate(e.target.value)}
+                    margin="dense"
+                    label="Display From"
+                    type="date"
+                    fullWidth
+                    variant="outlined"
+                    value={dialogDisplayStartDate}
+                  />
+                </Grid>
+                <Grid item xs={6} md={6}>
+                  <TextField
+                    InputLabelProps={{ shrink: true }}
+                    onChange={(e) => setDialogDisplayEndDate(e.target.value)}
+                    margin="dense"
+                    label="Display Until"
+                    type="date"
+                    fullWidth
+                    variant="outlined"
+                    value={dialogDisplayEndDate}
+                  />
+                </Grid>
+              </>
+            )}
             <Grid item xs={12} md={12}>
               <TextField
                 onChange={(e) => setDialogSortOrder(e.target.value)}
