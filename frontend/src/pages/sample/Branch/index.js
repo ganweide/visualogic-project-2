@@ -26,6 +26,7 @@ import {
   Switch,
   IconButton,
   TablePagination,
+  InputAdornment,
 } from "@mui/material";
 
 import EditIcon from '@mui/icons-material/Edit';
@@ -34,6 +35,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Styles from "./style";
 
 const branchURL = "http://localhost:5000/api/branches";
+const staffURL = "http://localhost:5000/api/staff";
 const useStyles = makeStyles(Styles);
 
 const Branch = () => {
@@ -57,6 +59,7 @@ const Branch = () => {
   const [dialogBranchCode, setDialogBranchCode]                   = useState("");
   const [dialogWhatsappNo, setDialogWhatsappNo]                   = useState("");
   const [dialogPaymentSecretKey, setDialogPaymentSecretKey]       = useState("");
+  const [dialogAPIKey, setDialogAPIKey]                           = useState("");
   const [dialogStartOperatingHours, setDialogStartOperatingHours] = useState("");
   const [dialogEndOperatingHours, setDialogEndOperatingHours]     = useState("");
   const [dialogAddress, setDialogAddress]                         = useState("");
@@ -64,9 +67,12 @@ const Branch = () => {
   const [dialogWazeLink, setDialogWazeLink]                       = useState("");
   const [dialogContact, setDialogContact]                         = useState("");
   const [dialogOrder, setDialogOrder]                             = useState("");
-  const [dialogQRCode, setDialogQRCode]                           = useState("");
+  const [dialogImageUrl, setDialogImageUrl]                       = useState("");
+  const [dialogImageData, setDialogImageData]                     = useState("");
   const [dialogHQSwitch, setDialogHQSwitch]                       = useState(false);
   const [dialogTaxSwitch, setDialogTaxSwitch]                     = useState(false);
+  const [dialogTaxPercent, setDialogTaxPercent]                   = useState("");
+  const [dialogOwnBranchPercent, setDialogOwnBranchPercent]       = useState("");
   const [dialogActiveSwitch, setDialogActiveSwitch]               = useState(true);
 
   // Retrieve Data
@@ -139,21 +145,24 @@ const Branch = () => {
     try {
       const data = {
         areaName: dialogAreaName,
-        branchName: dialogBranchName,
-        branchCode: dialogBranchCode,
-        whatsappNo: dialogWhatsappNo,
-        paymentSecretKey: dialogPaymentSecretKey,
-        startOperatingHours: dialogStartOperatingHours,
-        endOperatingHours: dialogEndOperatingHours,
+        branch_name: dialogBranchName,
+        branch_code: dialogBranchCode,
+        whatsappno: dialogWhatsappNo,
+        paymentkey: dialogPaymentSecretKey,
+        apikey: dialogAPIKey,
+        operatin_from_hours: dialogStartOperatingHours,
+        operating_to_hours: dialogEndOperatingHours,
         address: dialogAddress,
-        googleLink: dialogGoogleLink,
-        wazeLink: dialogWazeLink,
+        google_link: dialogGoogleLink,
+        waze_link: dialogWazeLink,
         contact: dialogContact,
-        order: dialogOrder,
-        qrCode: dialogQRCode,
-        hqSwitch: dialogHQSwitch,
-        taxSwitch: dialogTaxSwitch,
-        activeSwitch: dialogActiveSwitch,
+        sortorder: dialogOrder,
+        image_url: dialogImageUrl,
+        image_data: dialogImageData,
+        hqbranch: dialogHQSwitch,
+        tax: dialogTaxSwitch,
+        taxpercent: dialogTaxPercent,
+        status_active: dialogActiveSwitch,
       };
 
       const response = await axios.post('http://localhost:5000/api/branches', data, {
@@ -350,15 +359,20 @@ const Branch = () => {
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
+            <Grid item xs={12} md={12}>
+              <Typography>Branch Information</Typography>
+            </Grid>
             <Grid item xs={6} md={6}>
               <TextField
-                onChange={(e) => setDialogAreaName(e.target.value)}
+                onChange={(e) => setDialogBranchCode(e.target.value)}
                 margin="dense"
-                label="Area Name"
+                label="Branch Code"
                 type="text"
                 fullWidth
                 variant="outlined"
-                value={dialogAreaName}
+                value={dialogBranchCode}
+                inputProps={{ maxLength: 10 }}
+                helperText="Only allows 10 characters"
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -374,62 +388,13 @@ const Branch = () => {
             </Grid>
             <Grid item xs={6} md={6}>
               <TextField
-                onChange={(e) => setDialogBranchCode(e.target.value)}
+                onChange={(e) => setDialogAreaName(e.target.value)}
                 margin="dense"
-                label="Branch Code"
+                label="Area Name"
                 type="text"
                 fullWidth
                 variant="outlined"
-                value={dialogBranchCode}
-              />
-            </Grid>
-            <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogWhatsappNo(e.target.value)}
-                margin="dense"
-                label="Whatsapp No."
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogWhatsappNo}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                onChange={(e) => setDialogPaymentSecretKey(e.target.value)}
-                margin="dense"
-                label="Secret Key (Payment)"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={dialogPaymentSecretKey}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setDialogStartOperatingHours(e.target.value)}
-                margin="dense"
-                label="Operating Hours From"
-                type="time"
-                fullWidth
-                variant="outlined"
-                value={dialogStartOperatingHours}
-              />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <TextField
-                InputLabelProps={{ shrink: true }}
-                onChange={(e) => setDialogEndOperatingHours(e.target.value)}
-                margin="dense"
-                label="Operating Hours To"
-                type="time"
-                fullWidth
-                variant="outlined"
-                value={dialogEndOperatingHours}
+                value={dialogAreaName}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -467,6 +432,53 @@ const Branch = () => {
                 value={dialogWazeLink}
               />
             </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography>Operating Hours</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                InputLabelProps={{ shrink: true }}
+                onChange={(e) => setDialogStartOperatingHours(e.target.value)}
+                margin="dense"
+                label="Operating Hours From"
+                type="time"
+                fullWidth
+                variant="outlined"
+                value={dialogStartOperatingHours}
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                InputLabelProps={{ shrink: true }}
+                onChange={(e) => setDialogEndOperatingHours(e.target.value)}
+                margin="dense"
+                label="Operating Hours To"
+                type="time"
+                fullWidth
+                variant="outlined"
+                value={dialogEndOperatingHours}
+              />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography>Contact Information</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                onChange={(e) => setDialogWhatsappNo(e.target.value)}
+                margin="dense"
+                label="Whatsapp No."
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={dialogWhatsappNo}
+              />
+            </Grid>
             <Grid item xs={6} md={6}>
               <TextField
                 onChange={(e) => setDialogContact(e.target.value)}
@@ -482,46 +494,75 @@ const Branch = () => {
               <Divider />
             </Grid>
             <Grid item xs={12} md={12}>
+              <Typography>Payment Information</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
+                onChange={(e) => setDialogPaymentSecretKey(e.target.value)}
                 margin="dense"
-                label="Sort Order"
+                label="Secret Key (Payment)"
                 type="text"
                 fullWidth
-                disabled
                 variant="outlined"
-                value={dialogOrder}
+                value={dialogPaymentSecretKey}
               />
             </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                onChange={(e) => setDialogAPIKey(e.target.value)}
+                margin="dense"
+                label="API Key (Payment)"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={dialogAPIKey}
+              />
+            </Grid>
+            <Grid item container xs={12} md={12} alignItems="center" spacing={2}>
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>SST (Service Tax, Sales Tax)</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Switch
+                      checked={dialogTaxSwitch}
+                      onChange={handleClickSwitchTax}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              {dialogTaxSwitch && (
+                <Grid item xs={6} md={6}>
+                  <TextField
+                    onChange={(e) => setDialogTaxPercent(e.target.value)}
+                    margin="dense"
+                    label="Tax Percent %"
+                    type="number"
+                    fullWidth
+                    variant="outlined"
+                    value={dialogTaxPercent}
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                    }}
+                  />
+                </Grid>
+              )}
+            </Grid>
             <Grid item xs={12} md={12}>
-              <Divider />
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6} md={6}>
-                  <Typography>HQ</Typography>
-                </Grid>
-                <Grid item xs={6} md={6}>
-                  <Switch
-                    checked={dialogHQSwitch}
-                    onChange={handleClickSwitchHQ}
-                    inputProps={{ 'aria-label': 'controlled' }}
-                  />
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item xs={6} md={6}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6} md={6}>
-                  <Typography>SST (Service Tax, Sales Tax)</Typography>
-                </Grid>
-                <Grid item xs={6} md={6}>
-                  <Switch
-                    checked={dialogTaxSwitch}
-                    onChange={handleClickSwitchTax}
-                    inputProps={{ 'aria-label': 'controlled' }}
-                  />
-                </Grid>
-              </Grid>
+              <TextField
+                onChange={(e) => setDialogOwnBranchPercent(e.target.value)}
+                margin="dense"
+                label="Own Branch Percent %"
+                type="number"
+                fullWidth
+                variant="outlined"
+                value={dialogOwnBranchPercent}
+                InputProps={{
+                  endAdornment: <InputAdornment position="end">%</InputAdornment>,
+                }}
+              />
             </Grid>
             <Grid item xs={12} md={12}>
               <Divider />
@@ -529,7 +570,7 @@ const Branch = () => {
             <Grid item xs={12} md={12}>
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} md={12}>
-                  <Typography variant='h3'>Branch QR Code</Typography>
+                  <Typography>Branch Image</Typography>
                 </Grid>
                 <Grid item xs={12} md={12}>
                   <Box
@@ -544,9 +585,9 @@ const Branch = () => {
                     }}
                   >
                     <input {...getInputProps()} />
-                    {dialogQRCode ? (
+                    {dialogImageUrl ? (
                       <img
-                        src={dialogQRCode}
+                        src={dialogImageUrl}
                         alt="Preview"
                         style={{ maxWidth: '100%', maxHeight: '100%' }}
                       />
@@ -563,11 +604,28 @@ const Branch = () => {
               <Divider />
             </Grid>
             <Grid item xs={12} md={12}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={6} md={6}>
-                  <Typography>Active/InActive</Typography>
+              <Typography>Other Settings</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  <Typography>HQ</Typography>
                 </Grid>
-                <Grid item xs={6} md={6}>
+                <Grid item>
+                  <Switch
+                    checked={dialogHQSwitch}
+                    onChange={handleClickSwitchHQ}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <Grid container alignItems="center" justifyContent="space-between">
+                <Grid item>
+                  <Typography>Active/Inactive</Typography>
+                </Grid>
+                <Grid item>
                   <Switch
                     checked={dialogActiveSwitch}
                     onChange={handleClickSwitchActiveInactive}
@@ -575,6 +633,16 @@ const Branch = () => {
                   />
                 </Grid>
               </Grid>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <TextField
+                margin="dense"
+                label="Sort Order"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={dialogOrder}
+              />
             </Grid>
           </Grid>
         </DialogContent>
