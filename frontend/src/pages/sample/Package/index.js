@@ -27,6 +27,7 @@ import {
   Switch,
   IconButton,
   DialogActions,
+  Divider,
  } from '@mui/material'
  import { 
   PersonAdd as PersonAddIcon,
@@ -51,6 +52,7 @@ const Package = () => {
   // Dialog States
   const [openAddNewPackage, setOpenAddNewPackage] = useState(false);
   const [dialogPackageName, setDialogPackageName] = useState("");
+  const [dialogPackageCode, setDialogPackageCode] = useState("");
   const [dialogPrice, setDialogPrice] = useState("");
   const [dialogCategory, setDialogCategory] = useState("");
   const [dialogPicture, setDialogPicture] = useState("");
@@ -99,6 +101,9 @@ const [statusFilter, setStatusFilter] = useState("");
       case "packageName":
         setDialogPackageName(value);
         break;
+        case "packageCode":
+          setDialogPackageCode(value);
+          break;
       case "price":
         setDialogPrice(value);
         break;
@@ -184,6 +189,7 @@ const [statusFilter, setStatusFilter] = useState("");
     try{
       const data = {
         packageName: dialogPackageName,
+        packageCode: dialogPackageCode,
         price: dialogPrice,
         category: dialogCategory,
         picture: dialogPicture,
@@ -271,12 +277,6 @@ const [statusFilter, setStatusFilter] = useState("");
     statusFilter, 
     packageData
   ]);
-
-  // Filter Package Data
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
 
   return (
     <Box>
@@ -404,10 +404,13 @@ const [statusFilter, setStatusFilter] = useState("");
         aria-labelledby='alert-dialog-title'
         aria-describedby='alert-dialog-description'
       >
-        <DialogTitle>Add New</DialogTitle>
+        <DialogTitle variant='h2'>Create Package</DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Package Setup</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
               label="Package Name"
               variant="outlined"
@@ -417,7 +420,17 @@ const [statusFilter, setStatusFilter] = useState("");
               margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
+              <TextField
+                label="Package Code"
+                variant="outlined"
+                fullWidth
+                value={dialogPackageCode}
+                onChange={(e)=>setDialogPackageCode(e,"packageCode")}
+                margin="dense"
+                />
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
               label="Price(RM)"
               variant="outlined"
@@ -427,7 +440,7 @@ const [statusFilter, setStatusFilter] = useState("");
               margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
               <FormControl fullWidth margin="dense">
                 <InputLabel>Category</InputLabel>{" "}
                 <Select
@@ -445,25 +458,9 @@ const [statusFilter, setStatusFilter] = useState("");
                 </Select>
               </FormControl>
             </Grid>
-            <Grid container spacing={2}>
-              {/* Unlimited Checkbox */}
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isUnlimited}
-                      onChange={handleUnlimitedChange}
-                      name="unlimited"
-                      value="unlimited"
-                    />
-                  }
-                  label="Unlimited"
-                />
-              </Grid>
-
               {/* Conditionally Render Number of Times Input if Unlimited is NOT checked */}
+              <Grid item xs={4} md={4}>
               {!isUnlimited && (
-                <Grid item xs={12} md={6}>
                   <TextField
                     fullWidth
                     label="Number of Times"
@@ -473,10 +470,26 @@ const [statusFilter, setStatusFilter] = useState("");
                     onChange={(e) => handleDialogInputChange(e, "numberOfTime")}
                     margin="dense"
                   />
-                </Grid>
               )}
+              </Grid>
+              {/* Unlimited Checkbox */}
+              <Grid item xs={2}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      display="flex"
+                      alignItems="center"
+                      checked={isUnlimited}
+                      onChange={handleUnlimitedChange}
+                      name="unlimited"
+                      value="unlimited"
+                    />
+                  }
+                  label="Unlimited"
+                />
+              </Grid>
             {/* Transferable Switch */}
-              <Grid item xs={12} md={12}>
+              <Grid item xs={6} md={6}>
                 <Box display="flex" alignItems="center" mt={2}>
                   <Typography>Transferable</Typography>
                   <Switch
@@ -487,7 +500,7 @@ const [statusFilter, setStatusFilter] = useState("");
               </Grid>
 
               {/* Individual Package Switch */}
-              <Grid item xs={12} md={12}>
+              <Grid item xs={6} md={6}>
                 <Box display="flex" alignItems="center" mt={2}>
                   <Typography>Individual Package</Typography>
                   <Switch
@@ -496,9 +509,15 @@ const [statusFilter, setStatusFilter] = useState("");
                   />
                 </Box>
               </Grid>
+              <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Promotion</Typography>
+            </Grid>
+
               {/* Promotion Checkbox */}
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
+                <Grid item xs={3}>
                   <FormControlLabel
                     control={
                       <Checkbox
@@ -551,9 +570,13 @@ const [statusFilter, setStatusFilter] = useState("");
                     </Grid>
                   </Grid>
                 )}
+              <Grid item xs={12} md={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={12} md={12}>
+                <Typography variant='h4'>Branches</Typography>
               </Grid>
               {/* All Branch Checkbox */}
-              <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <FormControlLabel
                     control={
@@ -567,7 +590,6 @@ const [statusFilter, setStatusFilter] = useState("");
                     label="All Branch"
                   />
                 </Grid>
-
                 {/* Conditionally Render Branch Input if All Branch is NOT checked */}
                 {!isAllBranch && (
                   <Grid item xs={12} md={12}>
@@ -587,6 +609,11 @@ const [statusFilter, setStatusFilter] = useState("");
                     </FormControl>
                   </Grid>
                 )}
+                <Grid item xs={12} md={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={12} md={12}>
+                <Typography variant='h4'>Package Image</Typography>
               </Grid>
             <Grid item xs={12} md={12}>
                   <Box
@@ -614,17 +641,13 @@ const [statusFilter, setStatusFilter] = useState("");
                     )}
                   </Box>
                 </Grid>
-            <Grid item xs={12} md={12}>
-              <TextField
-                label="Financial Info"
-                variant="outlined"
-                fullWidth
-                value={dialogFinancialInfo}
-                onChange={(e) => handleDialogInputChange(e, "financialInfo")}
-                margin="dense"
-                />
-            </Grid>
-            <Grid item xs={12} md={12}>
+                <Grid item xs={12} md={12}>
+                <Divider />
+              </Grid>
+              <Grid item xs={12} md={12}>
+                <Typography variant='h4'>Others</Typography>
+              </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
                 label="Order"
                 variant="outlined"
@@ -634,17 +657,18 @@ const [statusFilter, setStatusFilter] = useState("");
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={1} md={1}>
+              </Grid>
+            <Grid item xs={5} md={5}>
               <Box display="flex" alignItems="center" mt={2}>
                 
-                <Typography>Active</Typography>
+                <Typography>Active/Inactive</Typography>
                 <Switch
                   checked={dialogActiveSwitch}
                   onChange={handleActiveSwitchChange}
                 />
               </Box>
             </Grid>
-          </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>

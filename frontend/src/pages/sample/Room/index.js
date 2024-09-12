@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback} from "react";
 import { useDropzone } from "react-dropzone";
 import { makeStyles } from "@material-ui/core/styles";
 import {
@@ -42,7 +42,7 @@ const useStyles = makeStyles(Styles);
 
 const Room = () => {
   const classes = useStyles();
-  const tableHead = ["Room Number", "Floor", "Branch", "No of Person", "Gender", "Order", "Status"];
+  const tableHead = ["Branch", "Floor", "Room Number", "No of Person", "Gender", "Order", "Status", "Action"];
   const [roomData, setRoomData] = useState([]);
   const [filteredRoomData, setFilteredRoomData] = useState([]);
   const [floorData, setFloorData] = useState([]);
@@ -230,22 +230,16 @@ const Room = () => {
     setDialogActiveSwitch(!dialogActiveSwitch);
   };
 
-  // Use Dropzone
-  const { getRootProps, getInputProps } = useDropzone({
-    accept: "image/*",
-    onDrop: (acceptedFiles) => {
-      const file = acceptedFiles[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        setDialogPicture(reader.result);
-      };
-      reader.readAsDataURL(file);
-    },
-  });
+  // Image Dropzone
+  const onDrop = useCallback((acceptedFiles) => {
+    const image = acceptedFiles[0];
+    setDialogPicture(URL.createObjectURL(image));
+  }, []);
 
-  // Destroy Dropzone
-  const dropzoneProps = getRootProps();
-  const inputProps = getInputProps();
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: 'image/*',
+   });
 
   return (
     <Box>
@@ -254,7 +248,7 @@ const Room = () => {
           {/* Header */}
           <Grid item xs={12} sm={12}>
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="h1">Room Table</Typography>
+              <Typography variant="h1">Room</Typography>
               {/* Add Floor Button */}
               <Button
                 variant="outlined"
@@ -266,35 +260,7 @@ const Room = () => {
             </Box>
             {/*Room Filter */}
             <Grid container spacing={2} mb={2}>
-              <Grid item xs={12} md={1.7}>
-                <TextField
-                  label="Room Name"
-                  variant="outlined"
-                  fullWidth
-                  value={roomNumberFilter}
-                  onChange={(e) => setRoomNumberFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={1.7}>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Floor</InputLabel>
-                  <Select
-                    value={floorFilter}
-                    onChange={(e) => setFloorFilter(e.target.value)}
-                    label="Floor"
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {floorData.map((floor) => (
-                      <MenuItem key={floor.id} value={floor.name}>
-                        {floor.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={1.7}>
+            <Grid item xs={12} md={1.5}>
                 <FormControl variant="outlined" fullWidth>
                   <InputLabel>Branch</InputLabel>
                   <Select
@@ -313,7 +279,35 @@ const Room = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={1.7}>
+              <Grid item xs={12} md={1.5}>
+                <FormControl variant="outlined" fullWidth>
+                  <InputLabel>Floor</InputLabel>
+                  <Select
+                    value={floorFilter}
+                    onChange={(e) => setFloorFilter(e.target.value)}
+                    label="Floor"
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    {floorData.map((floor) => (
+                      <MenuItem key={floor.id} value={floor.name}>
+                        {floor.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={1.5}>
+                <TextField
+                  label="Room No"
+                  variant="outlined"
+                  fullWidth
+                  value={roomNumberFilter}
+                  onChange={(e) => setRoomNumberFilter(e.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} md={1.5}>
                 <TextField
                   label="No of Person"
                   variant="outlined"
@@ -322,7 +316,7 @@ const Room = () => {
                   onChange={(e) => setNumberOfPersonFilter(e.target.value)}
                 />
               </Grid>
-              <Grid item xs={12} md={1.7}>
+              <Grid item xs={12} md={1.5}>
                 <FormControl variant="outlined" fullWidth>
                   <InputLabel>Gender</InputLabel>
                   <Select
@@ -338,7 +332,7 @@ const Room = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={1.7}>
+              <Grid item xs={12} sm={1.5}>
                 <TextField
                   label="Sort Order"
                   variant="outlined"
@@ -347,7 +341,7 @@ const Room = () => {
                   onChange={(e) => setSortOrderFilter(e.target.value)}
                 />
               </Grid>
-              <Grid item xs={12} sm={1.7}>
+              <Grid item xs={12} sm={1.5}>
                 <FormControl variant="outlined" fullWidth>
                   <InputLabel>Status</InputLabel>
                   <Select
@@ -363,9 +357,11 @@ const Room = () => {
                   </Select>
                 </FormControl>
               </Grid>
+              <Grid item xs={12} sm={1.5}>
+              </Grid>
             </Grid>
 
-            <Grid container spacing={2} mb={2}></Grid>
+            <Grid container spacing={2} mb={2}>
             {/* Room Table */}
             <TableContainer>
               <Table>
@@ -389,9 +385,9 @@ const Room = () => {
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((room) => (
                       <TableRow key={room.id}>
-                        <TableCell>{room.number}</TableCell>
-                        <TableCell>{room.floor}</TableCell>
                         <TableCell>{room.branch}</TableCell>
+                        <TableCell>{room.floor}</TableCell>
+                        <TableCell>{room.number}</TableCell>
                         <TableCell>{room.noOfPerson}</TableCell>
                         <TableCell>{room.gender}</TableCell>
                         <TableCell>{room.order}</TableCell>
@@ -416,6 +412,7 @@ const Room = () => {
                 onRowsPerPageChange={handleChangeRowsPerPage}
               />
             </TableContainer>
+            </Grid>
           </Grid>
         </Grid>
       </Card>
@@ -433,27 +430,12 @@ const Room = () => {
         </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
-                <InputLabel>Branch</InputLabel>
-                <Select
-                  value={dialogBranch}
-                  onChange={(e) => handleDialogInputChange(e, "branch")}
-                  label="Branch"
-                >
-                  
-                  {branchData.map((branch) => (
-                    <MenuItem key={branch.id} value={branch.name}>
-                      
-                      {branch.branchName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Room Setup</Typography>
             </Grid>
             <Grid item xs={6} md={6}>
               <FormControl fullWidth margin="dense">
-                <InputLabel>Floor</InputLabel>
+                <InputLabel>Floor No</InputLabel>
                 <Select
                   value={dialogFloor}
                   onChange={(e) => setDialogFloor(e, "floor")}
@@ -505,37 +487,63 @@ const Room = () => {
               <Divider />
             </Grid>
             <Grid item xs={12} md={12}>
-              <Box
-                {...dropzoneProps}
-                sx={{
-                  border: "2px dashed #ddd",
-                  borderRadius: 2,
-                  padding: 2,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  mt: 2,
-                }}
-              >
-                <input {...inputProps} />
-                <Typography>
-                  Drag &apos;n&lsquo; drop a picture here, or click to select
-                  one
-                </Typography>
-              </Box>
-              {dialogPicture && (
-                <Box sx={{ mt: 2 }}>
-                  <img
-                    src={dialogPicture}
-                    alt="Preview"
-                    style={{ maxWidth: "100%", height: "auto" }}
-                  />
-                </Box>
-              )}
+              <Typography variant='h4'>Branches</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Branch</InputLabel>
+                <Select
+                  value={dialogBranch}
+                  onChange={(e) => handleDialogInputChange(e, "branch")}
+                  label="Branch"
+                >
+                  {branchData.map((branch) => (
+                    <MenuItem key={branch.id} value={branch.name}>
+                      {branch.branchName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
               <Divider />
             </Grid>
             <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Room Picture</Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+                  <Box
+                    {...getRootProps()}
+                    sx={{
+                      border: '2px dashed #cccccc',
+                      borderRadius: '4px',
+                      padding: '20px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    {dialogPicture ? (
+                      <img
+                        src={dialogPicture}
+                        alt="Preview"
+                        style={{ maxWidth: '100%', maxHeight: '100%' }}
+                      />
+                    ) : isDragActive ? (
+                      <Typography>Drop the image here ...</Typography>
+                    ) : (
+                      <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                    )}
+                  </Box>
+                </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Others</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
                 label="Order"
                 variant="outlined"
@@ -545,9 +553,10 @@ const Room = () => {
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={1} md={1}></Grid>
+            <Grid item xs={5} md={5}>
               <Box display="flex" alignItems="center" mt={2}>
-                <Typography>Active</Typography>
+                <Typography>Active/Inactive</Typography>
                 <Switch
                   checked={dialogActiveSwitch}
                   onChange={handleActiveSwitchChange}
@@ -561,7 +570,6 @@ const Room = () => {
             Cancel
           </Button>
           <Button onClick={handleSaveNewRoom} color="primary">
-            
             Save
           </Button>
         </DialogActions>

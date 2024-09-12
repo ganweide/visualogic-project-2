@@ -26,6 +26,7 @@ import {
   DialogActions,
   Box,
   Switch,
+  Divider,
 } from "@mui/material";
 import {
   PersonAdd as PersonAddIcon,
@@ -40,7 +41,7 @@ const useStyles = makeStyles(Styles);
 
 const Floor = () => {
   const classes = useStyles();
-  const tableHead = ["Floor Number", "Floor Detail", "Branch", "Picture", "Order", "Status", "Actions"];
+  const tableHead = ["Branch", "Floor Number", "Floor Detail", "Order", "Status", "Actions"];
   const [floorDatabase, setFloorDatabase] = useState([]);
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [filteredFloorData, setFilteredFloorData] = useState([]);
@@ -217,7 +218,7 @@ const Floor = () => {
                 justifyContent: "space-between"
               }}
             >
-              <Typography variant="h1">Floor Management</Typography>
+              <Typography variant="h1">Floor</Typography>
               <Button
                 variant="outlined"
                 startIcon={<PersonAddIcon />}
@@ -228,27 +229,7 @@ const Floor = () => {
             </Box>
             {/* Floor Filters */}
           </Grid>
-          <Grid item xs={2.4} sm={2.4}>
-            <TextField
-              margin="dense"
-              label="Floor Number"
-              variant="outlined"
-              fullWidth
-              value={floorNumberFilter}
-              onChange={(e) => setFloorNumberFilter(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={2.4} sm={2.4}>
-            <TextField
-              margin="dense"
-              label="Floor Detail"
-              variant="outlined"
-              fullWidth
-              value={floorDetailFilter}
-              onChange={(e) => setFloorDetailFilter(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={2.4} sm={2.4}>
+          <Grid item xs={2.4} sm={2}>
             <FormControl variant="outlined" fullWidth margin="dense">
               <InputLabel>Branch</InputLabel>
               <Select
@@ -267,17 +248,37 @@ const Floor = () => {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={2.4} sm={2.4}>
+          <Grid item xs={2.4} sm={2}>
             <TextField
               margin="dense"
-              label="Sort Order"
+              label="Floor Number"
+              variant="outlined"
+              fullWidth
+              value={floorNumberFilter}
+              onChange={(e) => setFloorNumberFilter(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={2.4} sm={2}>
+            <TextField
+              margin="dense"
+              label="Floor Detail"
+              variant="outlined"
+              fullWidth
+              value={floorDetailFilter}
+              onChange={(e) => setFloorDetailFilter(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={2.4} sm={2}>
+            <TextField
+              margin="dense"
+              label="Order"
               variant="outlined"
               fullWidth
               value={sortOrderFilter}
               onChange={(e) => setSortOrderFilter(e.target.value)}
             />
           </Grid>
-          <Grid item xs={2.4} sm={2.4}>
+          <Grid item xs={2.4} sm={2}>
             <FormControl variant="outlined" fullWidth margin="dense">
               <InputLabel>Status</InputLabel>
               <Select
@@ -286,12 +287,14 @@ const Floor = () => {
                 label="Status"
               >
                 <MenuItem value="">
-                  <em>None</em>
+                  <em>All</em>
                 </MenuItem>
                 <MenuItem value="Active">Active</MenuItem>
                 <MenuItem value="Inactive">Inactive</MenuItem>
               </Select>
             </FormControl>
+            <Grid item xs={2.4} sm={2}>
+            </Grid>
           </Grid>
           {/* Floor Table */}
           <Grid item xs={12} md={12}>
@@ -316,10 +319,9 @@ const Floor = () => {
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((floor) => (
                     <TableRow key={floor.id}>
+                      <TableCell>{floor.branchName}</TableCell>
                       <TableCell>{floor.floorNo}</TableCell>
                       <TableCell>{floor.floorDetail}</TableCell>
-                      <TableCell>{floor.branchName}</TableCell>
-                      <TableCell>{floor.image}</TableCell>
                       <TableCell>{floor.order}</TableCell>
                       <TableCell>
                         <Switch checked={floor.activeSwitch} disabled />
@@ -345,15 +347,22 @@ const Floor = () => {
         </Grid>
       </Card>
       <Dialog
+        fullWidth
+        maxWidth="md"
         open={addNewFloorDialogOpen}
         onClose={handleCloseAddNewFloorDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
       >
         <DialogTitle>
-          <Typography>Add New Floor</Typography>
+          <Typography variant="h2">Create Floor</Typography>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Floor Setup</Typography>
+            </Grid>
+            <Grid item xs={6} sm={6}>
               <TextField
                 label="Floor Number"
                 variant="outlined"
@@ -363,9 +372,25 @@ const Floor = () => {
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={6} sm={6}>
+              <TextField
+                label="Floor Detail"
+                variant="outlined"
+                fullWidth
+                value={dialogFloorDetail}
+                onChange={(e) => handleDialogInputChange(e, "floorDetail")}
+                margin="dense"
+              />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Branch</Typography>
+            </Grid>
+            <Grid item xs={6} sm={6}>
               <FormControl fullWidth margin="dense">
-                <InputLabel>Branch</InputLabel>
+                <InputLabel>Branches</InputLabel>
                 <Select
                   value={dialogBranch}
                   onChange={(e) => handleDialogInputChange(e, "branch")}
@@ -380,14 +405,10 @@ const Floor = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={12}>
-              <TextField
-                label="Floor Detail"
-                variant="outlined"
-                fullWidth
-                value={dialogFloorDetail}
-                onChange={(e) => handleDialogInputChange(e, "floorDetail")}
-                margin="dense"
-              />
+              <Divider/>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Floor Picture</Typography>
             </Grid>
             <Grid item xs={12} sm={12}>
               <Box
@@ -416,6 +437,12 @@ const Floor = () => {
               </Box>
             </Grid>
             <Grid item xs={12} sm={12}>
+              <Divider/>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant='h4'>Others</Typography>
+            </Grid>
+            <Grid item xs={6} sm={6}>
               <TextField
                 label="Order"
                 variant="outlined"
@@ -425,9 +452,10 @@ const Floor = () => {
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} sm={12}>
+            <Grid item xs={1} sm={1}></Grid>
+            <Grid item xs={5} sm={5}>
               <Box display="flex" alignItems="center" mt={2}>
-                <Typography>Active</Typography>
+                <Typography>Active/Inactive</Typography>
                 <Switch
                   checked={dialogActiveSwitch}
                   onChange={handleActiveSwitchChange}
