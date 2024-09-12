@@ -33,6 +33,7 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Styles from "./style";
 
 const staffURL = "http://localhost:5000/api/staff";
+const roleURL = "http://localhost:5000/api/role";
 const branchURL = "http://localhost:5000/api/branches";
 const useStyles = makeStyles(Styles);
 
@@ -41,6 +42,7 @@ const Staff = () => {
   const tableHead = ["Name", "Gender", "Role", "Branch", "Mobile No.", "Status", ""];
   const [staffDatabase, setStaffDatabase] = useState([]);
   const [branchDatabase, setBranchDatabase] = useState([]);
+  const [roleDatabase, setRoleDatabase] = useState([]);
   const [filteredStaffData, setFilteredStaffData] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
   // Filtering Bar
@@ -104,6 +106,13 @@ const Staff = () => {
 
         const uniqueBranchName = [...new Set(branch)];
         setDialogBranchNameItems(uniqueBranchName);
+      })
+    } catch (error) {
+      console.log(error)
+    }
+    try {
+      axios.get(roleURL).then((response) => {
+        setRoleDatabase(response.data);
       })
     } catch (error) {
       console.log(error)
@@ -193,31 +202,31 @@ const Staff = () => {
   const handleSaveNewStaff = async () => {
     try {
       const data = {
-        name: dialogName,
+        staffName: dialogName,
         staffCode: dialogStaffCode,
         branchName: dialogBranchName,
-        gender: dialogGender,
-        role: dialogRole,
-        joinDate: dialogJoinDate,
-        username: dialogUsername,
-        password: dialogPassword,
-        email: dialogEmail,
-        position: dialogPosition,
-        fullName: dialogFullName,
-        NRIC: dialogNRIC,
-        religion: dialogReligion,
-        mobileNo: dialogMobileNo,
-        martialStatus: dialogMartialStatus,
-        currentAddress: dialogCurrentAddress,
+        staffGender: dialogGender,
+        roleName: dialogRole,
+        staffJoinDate: dialogJoinDate,
+        staffUsername: dialogUsername,
+        staffPassword: dialogPassword,
+        staffEmail: dialogEmail,
+        staffPosition: dialogPosition,
+        staffFullName: dialogFullName,
+        staffNRIC: dialogNRIC,
+        staffReligion: dialogReligion,
+        staffMobileNo: dialogMobileNo,
+        staffMartialStatus: dialogMartialStatus,
+        staffCurrentAddress: dialogCurrentAddress,
         bankName: dialogBankName,
-        accountNo: dialogAccountNo,
-        EPFNo: dialogEPFONo,
-        SOCSNo: dialogSOCSNo,
-        incomeTaxNo: dialogIncomeTaxNo,
+        bankAccountNo: dialogAccountNo,
+        staffEPF: dialogEPFONo,
+        staffSOCSO: dialogSOCSNo,
+        staffIncomeTax: dialogIncomeTaxNo,
         emergencyContactName: dialogEmergencyContactName,
         emergencyContactRelation: dialogEmergencyRelation,
-        emergencyContact: dialogEmergencyContact,
-        activeSwitch: dialogActiveSwitch,
+        emergencyContactNo: dialogEmergencyContact,
+        staffStatus: dialogActiveSwitch,
       };
 
       const response = await axios.post(staffURL, data, {
@@ -440,9 +449,13 @@ const Staff = () => {
                   label   ="Branch Name"
                   onChange={(e) => {setDialogBranchName(e.target.value)}}
                 >
-                  {dialogBranchNameItems.map((option, index) => (
-                    <MenuItem key={index} value={option}>{option}</MenuItem>
-                  ))}
+                  {dialogBranchNameItems.length > 0 ? (
+                    dialogBranchNameItems.map((option, index) => (
+                      <MenuItem key={index} value={option}>{option}</MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No branches set up yet</MenuItem>
+                  )}
                 </Select>
               </FormControl>
             </Grid>
@@ -471,8 +484,15 @@ const Staff = () => {
                   label   ="Role"
                   onChange={(e) => {setDialogRole(e.target.value)}}
                 >
-                  <MenuItem value="Admin">Admin</MenuItem>
-                  <MenuItem value="Teacher">Teacher</MenuItem>
+                  {roleDatabase.length > 0 ? (
+                    roleDatabase.map((role) => (
+                      <MenuItem key={role._id} value={role.roleName}>
+                        {role.roleName}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>No roles set up yet</MenuItem>
+                  )}
                 </Select>
               </FormControl>
             </Grid>
