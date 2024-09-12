@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 
 const roleSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  allBranchCheckbox: { type: Boolean, default: false },
   adminRoleView: { type: Boolean, default: false },
   adminRoleCreate: { type: Boolean, default: false },
   adminRoleUpdate: { type: Boolean, default: false },
@@ -48,7 +46,11 @@ const roleSchema = new mongoose.Schema({
   financeAttendanceView: { type: Boolean, default: false },
   financeAttendanceCreate: { type: Boolean, default: false },
   financeAttendanceUpdate: { type: Boolean, default: false },
-  activeSwitch: { type: Boolean, default: true},
+  roleName: { type: String, required: true, unique: true },
+  branchName: [{ type: mongoose.Schema.Types.ObjectId, ref: 'branch' }],
+  allBranchStatus: { type: Boolean, required: true },
+  roleStatus: { type: Boolean, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
 const Role = mongoose.model('Role', roleSchema);

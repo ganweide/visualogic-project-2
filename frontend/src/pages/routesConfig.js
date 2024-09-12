@@ -17,6 +17,14 @@ const routesConfig = [
     url: '/sample/Role',
   },
   {
+    id: 'role2',
+    title: 'Role2',
+    messageId: 'Role2',
+    type: 'item',
+    icon: <BiAlignLeft />,
+    url: '/sample/Role2',
+  },
+  {
     id: 'banner',
     title: 'Banner',
     messageId: 'Banner',
