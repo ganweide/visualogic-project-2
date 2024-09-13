@@ -9,17 +9,9 @@ const routesConfig = [
     url: '/sample/Dashboard',
   },
   {
-    id: 'role',
+    id: 'role2',
     title: 'Role',
     messageId: 'Role',
-    type: 'item',
-    icon: <BiAlignLeft />,
-    url: '/sample/Role',
-  },
-  {
-    id: 'role2',
-    title: 'Role2',
-    messageId: 'Role2',
     type: 'item',
     icon: <BiAlignLeft />,
     url: '/sample/Role2',
