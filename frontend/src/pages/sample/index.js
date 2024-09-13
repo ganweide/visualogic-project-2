@@ -1,8 +1,8 @@
 import React from 'react';
 
 const Page1 = React.lazy(() => import('./Dashboard'));
-const Page2 = React.lazy(() => import('./Role'));
-const Page18 = React.lazy(() => import('./Role2'));
+// const Page2 = React.lazy(() => import('./Role'));
+const Page2 = React.lazy(() => import('./Role2'));
 const Page3 = React.lazy(() => import('./Banner'));
 const Page4 = React.lazy(() => import('./Messages'));
 const Page5 = React.lazy(() => import('./Staff'));
@@ -25,7 +25,7 @@ export const samplePagesConfigs = [
     element: <Page1 />,
   },
   {
-    path: '/sample/Role',
+    path: '/sample/Role2',
     element: <Page2 />,
   },
   {
@@ -87,9 +87,5 @@ export const samplePagesConfigs = [
   {
     path: '/sample/PackageReport',
     element: <Page17 />,
-  },
-  {
-    path: '/sample/Role2',
-    element: <Page18 />,
   },
 ];
