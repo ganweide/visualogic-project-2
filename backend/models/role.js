@@ -51,7 +51,20 @@ const roleSchema = new mongoose.Schema({
   allBranchStatus: { type: Boolean, required: true },
   roleStatus: { type: Boolean, required: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  deletedAt: { type: Date, default: null },
 });
+
+roleSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Soft delete method
+roleSchema.methods.softDelete = function() {
+  this.deletedAt = Date.now();
+  return this.save();
+};
 
 const Role = mongoose.model('Role', roleSchema);
 

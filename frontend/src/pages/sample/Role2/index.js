@@ -21,16 +21,17 @@ import {
   Divider,
   Switch,
   IconButton,
-  TablePagination,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 const roleURL = "http://localhost:5000/api/role"
@@ -39,7 +40,7 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
     const key = `${title}${permission}`;
     const formattedKey = key.charAt(0).toLowerCase() + key.slice(1);
-    setState((prev) => ({ ...prev, [key]: e.target.checked }));
+    setState((prev) => ({ ...prev, [formattedKey]: e.target.checked }));
   };
 
   return (
@@ -47,25 +48,27 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
       <Grid item xs={3}>
         <Typography>{title}</Typography>
       </Grid>
-      {permissions.map((permission) => (
+      {permissions.map((permission) => {
+        const key = `${title}${permission}`;
+        const formattedKey = key.charAt(0).toLowerCase() + key.slice(1);
+        return (
         <Grid item xs={3} key={permission}>
           <FormControlLabel
             control={
               <Checkbox 
-                checked={state[`${title.toLowerCase().replace('-', '')}${permission}`]} 
+                checked={state[`${formattedKey}`]}
                 onChange={handleChange(permission)} 
               />
             }
             label={permission}
           />
         </Grid>
-      ))}
+      )})}
     </Grid>
   );
 };
 
 const Role2 = () => {
-  const classes = useStyles();
   const [roleDatabase, setRoleDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
   const [roleName, setRoleName] = useState("");
@@ -90,26 +93,26 @@ const Role2 = () => {
 
   // Role Checkboxes Generation
   const roles = [
-    { title: 'Admin-Role', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Banner', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Message', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Staff', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Branch', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Room', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Package', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Member', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Admin-Booking', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Member-CheckIn', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Member-QR', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Member-Staff', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Finance-Purchase', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Finance-CheckIn', permissions: ['View', 'Create', 'Update'] },
-    { title: 'Finance-Attendance', permissions: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Role', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Banner', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Message', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Staff', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Branch', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Room', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Package', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Member', permission: ['View', 'Create', 'Update'] },
+    { title: 'Admin-Booking', permission: ['View', 'Create', 'Update'] },
+    { title: 'Member-CheckIn', permission: ['View', 'Create', 'Update'] },
+    { title: 'Member-QR', permission: ['View', 'Create', 'Update'] },
+    { title: 'Member-Staff', permission: ['View', 'Create', 'Update'] },
+    { title: 'Finance-Purchase', permission: ['View', 'Create', 'Update'] },
+    { title: 'Finance-CheckIn', permission: ['View', 'Create', 'Update'] },
+    { title: 'Finance-Attendance', permission: ['View', 'Create', 'Update'] },
   ];
 
-  const initialPermissionsState = roles.reduce((acc, { title, permissions }) => {
-    permissions.forEach((permission) => {
-      const key = `${title}${permission}`;
+  const initialPermissionsState = roles.reduce((acc, { title, permission }) => {
+    permission.forEach((perms) => {
+      const key = `${title}${perms}`;
       // Ensure the first letter is lowercase, but keep the rest as is
       const formattedKey = key.charAt(0).toLowerCase() + key.slice(1);
       acc[formattedKey] = false;
@@ -119,6 +122,18 @@ const Role2 = () => {
   }, {});
   const [permissions, setPermissions] = useState(initialPermissionsState);
 
+  // Alert Box
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   // Dialog Actions
   const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const handleOpenAddNewRoleDialog = () => {
@@ -127,6 +142,10 @@ const Role2 = () => {
 
   const handleCloseAddNewRoleDialog = () => {
     setAddNewRoleDialogOpen(false);
+    setPermissions(initialPermissionsState);
+    setRoleName("");
+    setAllBranch(false);
+    setBranch("");
   }
 
   const handleSaveNewRole = async () => {
@@ -161,12 +180,146 @@ const Role2 = () => {
       console.log('Role saved:', response.data);
       setRefreshTable(response.data);
       setAddNewRoleDialogOpen(false);
-      // TODO: Add logic to refresh the role list or show a success message
     } catch (error) {
       console.error('Error saving role:', error);
-      // TODO: Add error handling, e.g., show an error message to the user
     }
   }
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingRoleId, setEditingRoleId] = useState(null);
+  const handleOpenEditDialog = (rowData) => {
+    setEditingRoleId(rowData._id);
+    setRoleName(rowData.roleName);
+    setAllBranch(rowData.allBranchStatus);
+    setBranch(rowData.branchName);
+    setPermissions({
+      "admin-RoleView": rowData.adminRoleView,
+      "admin-RoleCreate": rowData.adminRoleCreate,
+      "admin-RoleUpdate": rowData.adminRoleUpdate,
+      "admin-BannerView": rowData.adminBannerView,
+      "admin-BannerCreate": rowData.adminBannerCreate,
+      "admin-BannerUpdate": rowData.adminBannerUpdate,
+      "admin-MessageView": rowData.adminMessageView,
+      "admin-MessageCreate": rowData.adminMessageCreate,
+      "admin-MessageUpdate": rowData.adminMessageUpdate,
+      "admin-StaffView": rowData.adminStaffView,
+      "admin-StaffCreate": rowData.adminStaffCreate,
+      "admin-StaffUpdate": rowData.adminStaffUpdate,
+      "admin-BranchView": rowData.adminBranchView,
+      "admin-BranchCreate": rowData.adminBranchCreate,
+      "admin-BranchUpdate": rowData.adminBranchUpdate,
+      "admin-RoomView": rowData.adminRoomView,
+      "admin-RoomCreate": rowData.adminRoomCreate,
+      "admin-RoomUpdate": rowData.adminRoomUpdate,
+      "admin-PackageView": rowData.adminPackageView,
+      "admin-PackageCreate": rowData.adminPackageCreate,
+      "admin-PackageUpdate": rowData.adminPackageUpdate,
+      "admin-MemberView": rowData.adminMemberView,
+      "admin-MemberCreate": rowData.adminMemberCreate,
+      "admin-MemberUpdate": rowData.adminMemberUpdate,
+      "admin-BookingView": rowData.adminBookingView,
+      "admin-BookingCreate": rowData.adminBookingCreate,
+      "admin-BookingUpdate": rowData.adminBookingUpdate,
+      "member-CheckInView": rowData.memberCheckInView,
+      "member-CheckInCreate": rowData.memberCheckInCreate,
+      "member-CheckInUpdate": rowData.memberCheckInUpdate,
+      "member-QRView": rowData.memberQRView,
+      "member-QRCreate": rowData.memberQRCreate,
+      "member-QRUpdate": rowData.memberQRUpdate,
+      "member-StaffView": rowData.memberStaffView,
+      "member-StaffCreate": rowData.memberStaffCreate,
+      "member-StaffUpdate": rowData.memberStaffUpdate,
+      "finance-PurchaseView": rowData.financePurchaseView,
+      "finance-PurchaseCreate": rowData.financePurchaseCreate,
+      "finance-PurchaseUpdate": rowData.financePurchaseUpdate,
+      "finance-CheckInView": rowData.financeCheckInView,
+      "finance-CheckInCreate": rowData.financeCheckInCreate,
+      "finance-CheckInUpdate": rowData.financeCheckInUpdate,
+      "finance-AttendanceView": rowData.financeAttendanceView,
+      "finance-AttendanceCreate": rowData.financeAttendanceCreate,
+      "finance-AttendanceUpdate": rowData.financeAttendanceUpdate,
+      "ActiveInactive": rowData.roleStatus
+    });
+    setEditDialogOpen(true);
+  }
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setEditingRoleId(null);
+    setPermissions(initialPermissionsState);
+    setRoleName("");
+    setAllBranch(false);
+    setBranch("");
+  }
+
+  const handleSaveEditRole = async () => {
+    try {
+      const transformPermissions = (permissions) => {
+        const transformed = {};
+        Object.entries(permissions).forEach(([key, value]) => {
+          if (key === 'ActiveInactive') {
+            transformed['roleStatus'] = value;
+          } else {
+            const parts = key.split('-');
+            console.log("newpart", parts);
+            const newKey = parts[0].toLowerCase() + parts.slice(1).join('');
+            console.log("newKye", newKey);
+            transformed[newKey] = value;
+          }
+        });
+        return transformed;
+      };
+
+      const updatedRoleData = {
+        roleName: roleName,
+        allBranchStatus: allBranch,
+        branchName: branch,
+        ...transformPermissions(permissions),
+      };
+  
+      const response = await axios.put(`${roleURL}/${editingRoleId}`, updatedRoleData);
+      
+      if (response.status === 200) {
+        console.log('Role updated successfully');
+        setRefreshTable(prev => !prev);
+        handleCloseEditDialog();
+      } else {
+        console.error('Failed to update role');
+      }
+    } catch (error) {
+      console.error('Error updating role:', error);
+    }
+  }
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingRole, setDeletingRole] = useState(null);
+  const handleOpenDeleteDialog = (rowData) => {
+    setDeletingRole(rowData);
+    setDeleteDialogOpen(true);
+  }
+
+  const handleCloseDeleteDialog = () => {
+    setDeletingRole(null);
+    setDeleteDialogOpen(false);
+  }
+
+  const handleDeleteRole = async () => {
+    try {
+      await axios.delete(`${roleURL}/${deletingRole._id}`);
+      setSnackbarMessage('Role deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setRefreshTable(prev => !prev);
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      setSnackbarMessage('Error deleting role');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      handleCloseDeleteDialog();
+    }
+  }
+  
 
   // Checkbox Actions
   const handleClickCheckboxAllBranch = (e) => {
@@ -205,12 +358,12 @@ const Role2 = () => {
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} md={6}>
-          <IconButton>
+          <IconButton color="success" onClick={() => handleOpenEditDialog(rowData)}>
             <EditIcon />
           </IconButton>
         </Grid>
         <Grid item xs={6} md={6}>
-          <IconButton>
+          <IconButton color="error" onClick={() => handleOpenDeleteDialog(rowData)}>
             <DeleteIcon />
           </IconButton>
         </Grid>
@@ -279,7 +432,6 @@ const Role2 = () => {
         fullWidth
         maxWidth          ="md"
         open              ={addNewRoleDialogOpen}
-        onClose           ={handleCloseAddNewRoleDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
@@ -330,11 +482,11 @@ const Role2 = () => {
             </Grid>
             <Grid item xs={12} md={12}>
               {/* Other Permissions */}
-              {roles.map(({ title, permissions }) => (
+              {roles.map(({ title, permission }) => (
                 <PermissionSection
                   key={title}
                   title={title}
-                  permissions={permissions}
+                  permissions={permission}
                   state={permissions}
                   setState={setPermissions}
                 />
@@ -356,9 +508,138 @@ const Role2 = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveNewRole}>Save</Button>
+          <Button variant="contained" onClick={handleSaveNewRole}>Save</Button>
+          <Button color="error" variant="outlined" onClick={handleCloseAddNewRoleDialog}>Cancel</Button>
         </DialogActions>
       </Dialog>
+      {/* Dialog Edit Role */}
+      <Dialog
+        fullWidth
+        maxWidth          ="md"
+        open              ={editDialogOpen}
+        aria-labelledby   ="alert-dialog-title"
+        aria-describedby  ="alert-dialog-description"
+      >
+        <DialogTitle>
+          <Typography>Edit Role</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={12}>
+              <TextField
+                onChange={(e) => setRoleName(e.target.value)}
+                margin="dense"
+                label="Role Name"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={roleName}
+              />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <FormGroup>
+                <FormControlLabel control={<Checkbox checked={allBranch} onChange={handleClickCheckboxAllBranch} />} label='All Branch' />
+              </FormGroup>
+            </Grid>
+            {!allBranch && (
+              <Grid item xs={12} md={12}>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel id="branch-select">Branch</InputLabel>
+                  <Select
+                    labelId ="branch-select"
+                    id      ="branch-select"
+                    value   ={branch}
+                    label   ="Branch"
+                    onChange={(e) => {setBranch(e.target.value)}}
+                  >
+                    {
+                      roleDatabase.map((row, index) => (
+                        <MenuItem key={index} value={row.branch}>{row.branch}</MenuItem>
+                      ))
+                    }
+                  </Select>
+                </FormControl>
+              </Grid>
+              )
+            }
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              {/* Other Permissions */}
+              {roles.map(({ title, permission }) => (
+                  <PermissionSection
+                    key={title}
+                    title={title}
+                    permissions={permission}
+                    state={permissions}
+                    setState={setPermissions}
+                  />
+              ))}
+              {/* Active/InActive */}
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={3}>
+                  <Typography>Active/InActive</Typography>
+                </Grid>
+                <Grid item xs={3}>
+                  <Switch
+                    checked={permissions.ActiveInactive}
+                    onChange={handleClickSwitchActiveInactive}
+                    inputProps={{ 'aria-label': 'controlled' }}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleSaveEditRole}>Save</Button>
+          <Button color="error" variant="outlined" onClick={handleCloseEditDialog}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog Edit Role */}
+      <Dialog
+        fullWidth
+        maxWidth          ="md"
+        open              ={deleteDialogOpen}
+        aria-labelledby   ="alert-dialog-title"
+        aria-describedby  ="alert-dialog-description"
+      >
+        <DialogTitle>
+          <Typography>Confirm Deletion</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography>Are you sure you want to delete the role: {deletingRole?.roleName}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleDeleteRole}>Save</Button>
+          <Button color="error" variant="outlined" onClick={handleCloseDeleteDialog}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Snackbar for alerts */}
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleCloseSnackbar}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
