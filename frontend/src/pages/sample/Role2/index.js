@@ -179,9 +179,15 @@ const Role2 = () => {
       const response = await axios.post(roleURL, roleData);
       console.log('Role saved:', response.data);
       setRefreshTable(response.data);
+      setSnackbarMessage('Role saved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
       setAddNewRoleDialogOpen(false);
     } catch (error) {
       console.error('Error saving role:', error);
+      setSnackbarMessage('Error saving role');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   }
 
@@ -282,9 +288,15 @@ const Role2 = () => {
       if (response.status === 200) {
         console.log('Role updated successfully');
         setRefreshTable(prev => !prev);
+        setSnackbarMessage('Edited role saved successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
         handleCloseEditDialog();
       } else {
         console.error('Failed to update role');
+        setSnackbarMessage('Error saving role');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
       }
     } catch (error) {
       console.error('Error updating role:', error);
@@ -597,7 +609,7 @@ const Role2 = () => {
           <Button color="error" variant="outlined" onClick={handleCloseEditDialog}>Cancel</Button>
         </DialogActions>
       </Dialog>
-      {/* Dialog Edit Role */}
+      {/* Dialog Delete Role */}
       <Dialog
         fullWidth
         maxWidth          ="md"
@@ -612,8 +624,8 @@ const Role2 = () => {
           <Typography>Are you sure you want to delete the role: {deletingRole?.roleName}?</Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={handleDeleteRole}>Save</Button>
-          <Button color="error" variant="outlined" onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={handleDeleteRole}>Delete</Button>
+          <Button variant="outlined" onClick={handleCloseDeleteDialog}>Cancel</Button>
         </DialogActions>
       </Dialog>
       {/* Snackbar for alerts */}
