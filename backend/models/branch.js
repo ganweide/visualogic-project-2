@@ -19,7 +19,7 @@ const branchSchema = new mongoose.Schema({
   imageUrl: { type: String },
   imageData: { type: String },
   hqStatus: { type: Boolean, required: true },
-  sortorder: { type: Number, default: 1 },
+  branchOrder: { type: Number, default: 1 },
   branchStatus: { type: Boolean, required: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },

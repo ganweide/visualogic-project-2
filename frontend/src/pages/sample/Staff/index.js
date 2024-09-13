@@ -433,7 +433,7 @@ const Staff = () => {
               filters={filters} 
               filterDisplay="row" 
               loading={staffDatabase.length === 0}
-              emptyMessage="No roles found."
+              emptyMessage="No staff found."
             >
               <Column
                 field="staffName"

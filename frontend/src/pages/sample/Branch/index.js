@@ -1,7 +1,6 @@
 import axios from "axios";
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from "react";
 import { useDropzone } from 'react-dropzone';
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Box,
   Button,
@@ -10,16 +9,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Grid,
   Typography,
   Divider,
@@ -29,29 +19,21 @@ import {
   InputAdornment,
 } from "@mui/material";
 
-import EditIcon from '@mui/icons-material/Edit';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
 
-import Styles from "./style";
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 const branchURL = "http://localhost:5000/api/branches";
 const staffURL = "http://localhost:5000/api/staff";
-const useStyles = makeStyles(Styles);
 
 const Branch = () => {
-  const classes = useStyles();
-  const tableHead = ["Area Name", "Branch Name", "Contact", "OR Code", "Order", "Status", ""];
   const [branchDatabase, setBranchDatabase] = useState([]);
-  const [filteredBranchData, setFilteredBranchData] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
-  
-  // Filtering Bar
-  const [areaNameFilterItems, setAreaNameFilterItems] = useState([]);
-  const [branchNameFilterItems, setBranchNameFilterItems] = useState([]);
-  const [areaFilter, setAreaFilter]  = useState("");
-  const [branchFilter, setBranchFilter] = useState("");
-  const [sortOrderFilter, setSortOrderFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
 
   // Add New Branch Dialog Constants
   const [dialogAreaName, setDialogAreaName]                       = useState("");
@@ -75,60 +57,63 @@ const Branch = () => {
   const [dialogOwnBranchPercent, setDialogOwnBranchPercent]       = useState("");
   const [dialogActiveSwitch, setDialogActiveSwitch]               = useState(true);
 
+  const [filters, setFilters] = useState({
+    areaName: { value: null, matchMode: 'contains' },
+    branchName: { value: null, matchMode: 'contains' },
+    branchOrder: { value: null, matchMode: 'equals' },
+    branchStatus: { value: null, matchMode: 'equals' },
+  });
+
   // Retrieve Data
   useEffect(() => {
     try {
       axios.get(branchURL).then((response) => {
         setBranchDatabase(response.data);
-        const latestBranch = response.data.length ? response.data[response.data.length - 1] : null;
-        setDialogOrder(latestBranch ? latestBranch.order + 1 : 1);
-        const area = response.data.map(data => data.areaName || 'null');
-        const branch = response.data.map(data => data.branchName || 'null');
-
-        const uniqueAreaName = ["All", ...new Set(area)];
-        const uniqueBranchName = ["All", ...new Set(branch)];
-        setAreaNameFilterItems(uniqueAreaName);
-        setBranchNameFilterItems(uniqueBranchName);
       })
     } catch (error) {
       console.log(error)
     }
   }, [refreshTable]);
 
-  // Filtering Bar
-  useEffect(() => {
-    let filtered = [...branchDatabase];
-
-    if (areaFilter && areaFilter !== 'All') {
-      filtered = filtered.filter((item) => item.areaName.includes(areaFilter));
-    }
-
-    if (branchFilter && branchFilter !== 'All') {
-      filtered = filtered.filter((item) => item.branchName.includes(branchFilter));
-    }
-
-    if (statusFilter && statusFilter !== 'All') {
-      filtered = filtered.filter((item) => (statusFilter === 'active' ? item.activeSwitch : !item.activeSwitch));
-    }
-
-    if (sortOrderFilter === 'Ascending') {
-      filtered.sort((a, b) => a.order - b.order);
-    } else if (sortOrderFilter === 'Descending') {
-      filtered.sort((a, b) => b.order - a.order);
-    }
-
-    setFilteredBranchData(filtered);
-  }, [branchDatabase, areaFilter, branchFilter, sortOrderFilter, statusFilter]);
-
-  // Pagination
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const handleChangePage = (e, newPage) => {
-    setPage(newPage);
+  // Datatable Templates
+  const statusBodyTemplate = (rowData) => {
+    return rowData.branchStatus ? 'Active' : 'Inactive';
   };
-  const handleChangeRowsPerPage = (e) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
+
+  const statusFilterTemplate = (options) => {
+    return (
+      <Dropdown 
+        value={filters.branchStatus.value}
+        options={[
+          { label: 'Active', value: true },
+          { label: 'Inactive', value: false },
+        ]} 
+        onChange={(e) => {
+          setFilters(prevFilters => ({
+            ...prevFilters,
+            branchStatus: { value: e.value, matchMode: 'equals' }
+          }));
+        }} 
+        placeholder="Select Branch"
+      />
+    );
+  };
+
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={6} md={6}>
+          <IconButton color="success" onClick={() => handleOpenEditDialog(rowData)}>
+            <EditIcon />
+          </IconButton>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <IconButton color="error" onClick={() => handleOpenDeleteDialog(rowData)}>
+            <DeleteIcon />
+          </IconButton>
+        </Grid>
+      </Grid>
+    );
   };
 
   // Dialog Actions
@@ -144,26 +129,26 @@ const Branch = () => {
   const handleSaveNewBranch = async () => {
     try {
       const data = {
-        area_name: dialogAreaName,
-        branch_name: dialogBranchName,
-        branch_code: dialogBranchCode,
-        whatsappno: dialogWhatsappNo,
-        paymentkey: dialogPaymentSecretKey,
-        apikey: dialogAPIKey,
-        operatin_from_hours: dialogStartOperatingHours,
-        operating_to_hours: dialogEndOperatingHours,
-        address: dialogAddress,
-        google_link: dialogGoogleLink,
-        waze_link: dialogWazeLink,
-        staff: dialogContact,
-        sortorder: dialogOrder,
-        image_url: dialogImageUrl,
-        image_data: dialogImageData,
-        hqbranch: dialogHQSwitch,
-        tax: dialogTaxSwitch,
-        tax_percent: dialogTaxPercent,
-        branch_percent: dialogOwnBranchPercent,
-        status_active: dialogActiveSwitch,
+        branchCode: dialogBranchCode,
+        branchName: dialogBranchName,
+        areaName: dialogAreaName,
+        branchAddress: dialogAddress,
+        googleLink: dialogGoogleLink,
+        wazeLink: dialogWazeLink,
+        operatingStart: dialogStartOperatingHours,
+        operatingEnd: dialogEndOperatingHours,
+        whatsappNo: dialogWhatsappNo,
+        staffName: dialogContact,
+        paymentKey: dialogPaymentSecretKey,
+        apiKey: dialogAPIKey,
+        taxStatus: dialogTaxSwitch,
+        taxPercent: dialogTaxPercent,
+        branchPercent: dialogOwnBranchPercent,
+        imageUrl: dialogImageUrl,
+        imageData: dialogImageData,
+        hqStatus: dialogHQSwitch,
+        branchOrder: dialogOrder,
+        branchStatus: dialogActiveSwitch,
       };
 
       const response = await axios.post('http://localhost:5000/api/branches', data, {
@@ -231,118 +216,62 @@ const Branch = () => {
               </Button>
             </Box>
           </Grid>
-          {/* Filter Bar */}
-          <Grid item xs={3} md={3}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="area-select">Filtered by Area</InputLabel>
-              <Select
-                labelId ="area-select"
-                id      ="area-select"
-                value   ={areaFilter}
-                label   ="Filtered by Area"
-                onChange={(e) => {setAreaFilter(e.target.value)}}
-              >
-                <MenuItem value="">None</MenuItem>
-                {areaNameFilterItems.map((option, index) => (
-                  <MenuItem key={index} value={option}>{option}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={3} md={3}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="branch-select">Filter by Branch</InputLabel>
-              <Select
-                labelId ="branch-select"
-                id      ="branch-select"
-                value   ={branchFilter}
-                label   ="Filter by Branch"
-                onChange={(e) => {setBranchFilter(e.target.value)}}
-              >
-                <MenuItem value="">None</MenuItem>
-                {branchNameFilterItems.map((option, index) => (
-                  <MenuItem key={index} value={option}>{option}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={3} md={3}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="sort-Order-select">Sort by Order</InputLabel>
-              <Select
-                labelId ="sort-Order-select"
-                id      ="sort-Order-select"
-                value   ={sortOrderFilter}
-                label   ="Sort by Order"
-                onChange={(e) => {setSortOrderFilter(e.target.value)}}
-              >
-                <MenuItem value="">None</MenuItem>
-                <MenuItem value="Ascending">Ascending</MenuItem>
-                <MenuItem value="Descending">Descending</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={3} md={3}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel id="status-select">Filtered by Status</InputLabel>
-              <Select
-                labelId ="status-select"
-                id      ="status-select"
-                value   ={statusFilter}
-                label   ="Filtered by Status"
-                onChange={(e) => {setStatusFilter(e.target.value)}}
-              >
-                <MenuItem value="">None</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
           {/* Table */}
           <Grid item xs={12} md={12}>
-            <Table>
-              <TableHead>
-                <TableRow className={classes.tableHeadRow}>
-                  {tableHead.map((prop) => (
-                    <TableCell
-                      className ={classes.tableCell + classes.tableHeadCell}
-                      key       ={prop}
-                      style     ={{
-                        textAlign: "left",
-                      }}
-                    >
-                      {prop}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredBranchData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((data, index) => (
-                  <TableRow key={index}>
-                    <TableCell style={{textAlign: "left"}}>{data.areaName}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.branchName}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.contact}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.qrCode}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.order}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{data.activeSwitch ? "active" : "inactive"}</TableCell>
-                    <TableCell style={{textAlign: "center"}}>
-                      <IconButton>
-                        <EditIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={filteredBranchData.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
+            <DataTable 
+              value={branchDatabase} 
+              paginator 
+              rows={10} 
+              dataKey="id" 
+              filters={filters} 
+              filterDisplay="row" 
+              loading={branchDatabase.length === 0}
+              emptyMessage="No branch found."
+            >
+              <Column
+                field="areaName"
+                header="Area"
+                filter
+                filterPlaceholder="Filter by Area"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="branchName"
+                header="Branch"
+                filter
+                filterPlaceholder="Filter by Branch"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="staffName"
+                header="Contact"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="imageUrl"
+                header="QR Code"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="branchOrder"
+                header="Order"
+                filter
+                filterPlaceholder="Filter by Order"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="branchStatus"
+                header="Status"
+                body={statusBodyTemplate}
+                filter
+                filterElement={statusFilterTemplate}
+                style={{ minWidth: '12rem' }}
+              />
+              <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
+            </DataTable>
           </Grid>
         </Grid>
       </Card>
