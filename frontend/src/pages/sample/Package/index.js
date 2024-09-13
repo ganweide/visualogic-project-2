@@ -1,19 +1,11 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import { useDropzone } from 'react-dropzone';
-import { makeStyles } from "@material-ui/core/styles";
 import { 
   Box,
   Card,
   Grid,
   Typography,
   Button,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  TablePagination,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -27,196 +19,276 @@ import {
   Switch,
   IconButton,
   DialogActions,
+  Divider,
+  Snackbar,
+  Alert,
  } from '@mui/material'
- import { 
-  PersonAdd as PersonAddIcon,
-  Edit as EditIcon 
-} from '@mui/icons-material';
-import axios from 'axios';
-import Styles from './style';
 
-const packageURL = 'http://localhost:5000/package';
-const branchURL = 'http://localhost:5000/branch';
-const useStyles = makeStyles(Styles);
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
+
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+
+import axios from 'axios';
+
+const packageURL = 'http://localhost:5000/api/package';
+const branchURL = 'http://localhost:5000/api/branches';
 
 const Package = () => {
-  const classes = useStyles();
-  const tableHead = ["Package Name", "Price", "Number of Time", "Order", "Status"];
-  const [packageData, setPackageData] = useState([]);
-  const [filteredPackageData, setFilteredPackageData] = useState([]);
-  const [branchData, setBranchData] = useState([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [packageDatabase, setPackageDatabase] = useState([]);
+  const [branchDatabase, setBranchDatabase] = useState([]);
+  const [refreshTable, setRefreshTable] = useState([]);
 
-  // Dialog States
-  const [openAddNewPackage, setOpenAddNewPackage] = useState(false);
+  const [filters, setFilters] = useState({
+    packageName: { value: null, matchMode: 'contains' },
+    packageCode: { value: null, matchMode: 'contains' },
+    packagePrice: { value: null, matchMode: 'contains' },
+    packageOrder: { value: null, matchMode: 'contains' },
+    packageStatus: { value: null, matchMode: 'equals' }
+  });
+  // Add New Package Dialog Constants
   const [dialogPackageName, setDialogPackageName] = useState("");
+  const [dialogPackageCode, setDialogPackageCode] = useState("");
   const [dialogPrice, setDialogPrice] = useState("");
   const [dialogCategory, setDialogCategory] = useState("");
   const [dialogPicture, setDialogPicture] = useState("");
-  const [dialogFinancialInfo, setDialogFinancialInfo] = useState("");
-  const [dialogOrder, setDialogOrder] = useState("");
-  const [dialogActiveSwitch, setDialogActiveSwitch] = useState(false);
+  const [dialogPackageValidity, setDialogPackageValidity] = useState("");
+  const [dialogOrder, setDialogOrder] = useState("1");
+  const [dialogNumberOfTime, setDialogNumberOfTime] = useState("");
+  const [dialogPromoTime, setDialogPromoTime] = useState("");
+  const [dialogPromoPeriodFrom, setDialogPromoPeriodFrom] = useState("");
+  const [dialogPromoPeriodTo, setDialogPromoPeriodTo] = useState("");
+  const [dialogBranch, setDialogBranch] = useState("");
+  const [dialogTransferableSwitch, setDialogTransferableSwitch] = useState(false);
+  const [dialogIndividualPackageSwitch, setDialogIndividualPackageSwitch] = useState(false);
+  const [isPromotion, setIsPromotion] = useState(false);
+  const [dialogActiveSwitch, setDialogActiveSwitch] = useState(true);
+  const [isAllBranch, setIsAllBranch] = useState(false);
+  const [isUnlimited, setIsUnlimited] = useState(false);
 
-  // States for handling checkboxes and inputs
-const [dialogNumberOfTime, setDialogNumberOfTime] = useState("");
-const [dialogTransferableSwitch, setDialogTransferableSwitch] = useState(false);
-const [dialogIndividualPackageSwitch, setDialogIndividualPackageSwitch] = useState(false);
-const [isPromotion, setIsPromotion] = useState(false);  // Promotion checkbox state
-const [dialogPromoTime, setDialogPromoTime] = useState("");
-const [dialogPromoPeriodFrom, setDialogPromoPeriodFrom] = useState("");
-const [dialogPromoPeriodTo, setDialogPromoPeriodTo] = useState("");
-const [isAllBranch, setIsAllBranch] = useState(false);  // All Branch checkbox state
-const [dialogBranch, setDialogBranch] = useState("");
-const [isUnlimited, setIsUnlimited] = useState(false);  // Unlimited checkbox state
+  // Alert Box
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-// Filter States
-const [packageNameFilter, setPackageNameFilter] = useState("");
-const [priceFilter, setPriceFilter] = useState("");
-const [sortOrderFilter, setSortOrderFilter] = useState("");
-const [statusFilter, setStatusFilter] = useState("");
-
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
   // Fetch Package Data from API
   useEffect(() => {
     axios.get(packageURL)
     .then((response) => {
-      setPackageData(response.data);
-      setFilteredPackageData(response.data);
+      setPackageDatabase(response.data);
     })
     .catch((error) => {
       console.error('Error fetching data', error);
     });
 
     axios.get(branchURL).then((response) => {
-      setBranchData(response.data);
+      setBranchDatabase(response.data);
     });
-  }, []);
+  }, [refreshTable]);
 
-  // Handle Dialog Input Change
-  const handleDialogInputChange = (e, prop) => {
-    const value = e.target.value;
-    switch (prop) {
-      case "packageName":
-        setDialogPackageName(value);
-        break;
-      case "price":
-        setDialogPrice(value);
-        break;
-      case "category":
-        setDialogCategory(value);
-        break;
-        case "numberOfTime":
-          setDialogNumberOfTime(value);
-          break;
-        case "promoTime":
-          setDialogPromoTime(value);
-          break;
-        case "promoPeriodFrom":
-          setDialogPromoPeriodFrom(value);
-          break;
-        case "promoPeriodTo":
-          setDialogPromoPeriodTo(value);
-          break;
-        case "branch":
-          setDialogBranch(value);
-          break;
-      case "picture":
-        setDialogPicture(value);
-        break;
-      case "financialInfo":
-        setDialogFinancialInfo(value);
-        break;
-      case "order":
-        setDialogOrder(value);
-        break;
-      case "active":
-        setDialogActiveSwitch(!dialogActiveSwitch);
-        break;
-      default:
-        break;
-    }
-  };
-
-  // Handle Unlimited Checkbox Change
-  const handleUnlimitedChange = () => {
-    setDialogNumberOfTime("");  // Clear number of time when unlimited is checked
-    setIsUnlimited(!isUnlimited);
-  };
-
-  // Handle Promotion Checkbox Change
-  const handlePromotionChange = (event) => {
+  // Checkbox Actions
+  const handleClickCheckboxPromotion = (event) => {
     setIsPromotion(event.target.checked);
   };
 
-  // Handle All Branch Checkbox Change
-  const handleAllBranchChange = () => {
+  const handleClickCheckboxAllBranch = () => {
     setDialogBranch("");  // Clear branch when "All Branch" is checked
     setIsAllBranch(!isAllBranch);
   };
 
-  // Handle Transferable Switch Change
-  const handleTransferableSwitchChange = () => {
+  // Switch Actions
+  const handleClickCheckboxUnlimited = () => {
+    setDialogNumberOfTime("");  // Clear number of time when unlimited is checked
+    setIsUnlimited(!isUnlimited);
+  };
+
+  const handleClickSwitchTransferable = () => {
     setDialogTransferableSwitch(!dialogTransferableSwitch);
   };
 
-  // Handle Individual Package Switch Change
-  const handleIndividualPackageSwitchChange = () => {
+  const handleClickSwitchIndividualPackage = () => {
     setDialogIndividualPackageSwitch(!dialogIndividualPackageSwitch);
   };
 
-  // Handle Active Switch Change
-  const handleActiveSwitchChange = () => {
+  const handleClickSwitchActiveInactive = () => {
     setDialogActiveSwitch(!dialogActiveSwitch);
   };
 
-  // Handle Open Add New Package Dialog
+  // Dialog Actions
+  const [openAddNewPackage, setOpenAddNewPackage] = useState(false);
   const handleOpenAddNewPackage = () => {
     setOpenAddNewPackage(true);
   }
 
-  // Handle Close Add New Package Dialog
   const handleCloseAddNewPackage = () => {
     setOpenAddNewPackage(false);
   }
 
-  // Handle Save New Package
   const handleSaveNewPackage = async () => {
     try{
       const data = {
         packageName: dialogPackageName,
-        price: dialogPrice,
-        category: dialogCategory,
-        picture: dialogPicture,
-        financialInfo: dialogFinancialInfo,
-        order: dialogOrder,
-        active: dialogActiveSwitch,
-        numberOfTime: dialogNumberOfTime,
-        transferable: dialogTransferableSwitch,
-        individualPackage: dialogIndividualPackageSwitch,
-        promotion: isPromotion,
-        promoTime: dialogPromoTime,
-        promoPeriodFrom: dialogPromoPeriodFrom,
-        promoPeriodTo: dialogPromoPeriodTo,
-        allBranch: isAllBranch,
-        branch: dialogBranch,
+        packageCode: dialogPackageCode,
+        packagePrice: dialogPrice,
+        packageCategory: dialogCategory,
+        packageImageURL: dialogPicture,
+        packageOrder: dialogOrder,
+        packageStatus: dialogActiveSwitch,
+        packageAmount: dialogNumberOfTime,
+        transferableStatus: dialogTransferableSwitch,
+        individualPackageStatus: dialogIndividualPackageSwitch,
+        packageValidity: dialogPackageValidity,
+        promotionStatus: isPromotion,
+        promotionAmount: dialogPromoTime,
+        promotionStartDate: dialogPromoPeriodFrom,
+        promotionEndDate: dialogPromoPeriodTo,
+        allBranchStatus: isAllBranch,
+        branchName: dialogBranch ? dialogBranch : null,
       };
+      console.log(data);
 
-      const response = await axios.post(packageURL, data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      const newPackage = response.data;
-      alert("New Package Added Successfully");
-      console.log('New package added: ',newPackage);
+      const response = await axios.post(packageURL, data);
+      console.log('New package added: ',response.data);
       setRefreshTable(response.data);
+      setSnackbarMessage('Role saved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
       handleCloseAddNewPackage();
     } catch (error) {
-      alert("Failed to add new package");
       console.error('Error: ', error);
+      setSnackbarMessage('Error saving role');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
+
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingPackageId, setEditingPackageId] = useState(null);
+  const handleOpenEditDialog = (rowData) => {
+    setEditingPackageId(rowData._id);
+    setDialogPackageName(rowData.packageName);
+    setDialogPackageCode(rowData.packageCode);
+    setDialogPrice(rowData.packagePrice);
+    setDialogCategory(rowData.packageCategory);
+    setDialogPicture(rowData.packageImageURL);
+    setDialogPackageValidity(rowData.packageValidity);
+    setDialogOrder(rowData.packageOrder);
+    setDialogActiveSwitch(rowData.packageStatus);
+    setDialogNumberOfTime(rowData.packageAmount);
+    setDialogTransferableSwitch(rowData.transferableStatus);
+    setDialogIndividualPackageSwitch(rowData.individualPackageStatus);
+    setIsPromotion(rowData.promotionStatus);
+    setDialogPromoTime(rowData.promotionAmount);
+    setDialogPromoPeriodFrom(rowData.promotionStartDate);
+    setDialogPromoPeriodTo(rowData.promotionEndDate);
+    setIsAllBranch(rowData.allBranchStatus);
+    setDialogBranch(rowData.branchName);
+    setIsUnlimited(rowData.packageUnlimitedStatus);
+    setEditDialogOpen(true);
+  }
+
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setDialogPackageName("");
+    setDialogPackageCode("");
+    setDialogPrice("");
+    setDialogCategory("");
+    setDialogPicture("");
+    setDialogPackageValidity("");
+    setDialogOrder("");
+    setDialogNumberOfTime("");
+    setDialogPromoTime("");
+    setDialogPromoPeriodFrom("");
+    setDialogPromoPeriodTo("");
+    setDialogBranch("");
+    setDialogTransferableSwitch(false);
+    setDialogIndividualPackageSwitch(false);
+    setIsPromotion(false);
+    setDialogActiveSwitch(true);
+    setIsAllBranch(false);
+    setIsUnlimited(false);
+  }
+
+  const handleSaveEditPackage = async () => {
+    try {
+      const updatedPackageData = {
+        packageName: dialogPackageName,
+        packageCode: dialogPackageCode,
+        packagePrice: dialogPrice,
+        packageCategory: dialogCategory,
+        packageImageURL: dialogPicture,
+        packageOrder: dialogOrder,
+        packageStatus: dialogActiveSwitch,
+        packageAmount: dialogNumberOfTime,
+        transferableStatus: dialogTransferableSwitch,
+        individualPackageStatus: dialogIndividualPackageSwitch,
+        packageValidity: dialogPackageValidity,
+        promotionStatus: isPromotion,
+        promotionAmount: dialogPromoTime,
+        promotionStartDate: dialogPromoPeriodFrom,
+        promotionEndDate: dialogPromoPeriodTo,
+        allBranchStatus: isAllBranch,
+        branchName: dialogBranch ? dialogBranch : null,
+      };
+  
+      const response = await axios.put(`${packageURL}/${editingPackageId}`, updatedPackageData);
+      
+      if (response.status === 200) {
+        console.log('Package updated successfully');
+        setRefreshTable(prev => !prev);
+        setSnackbarMessage('Edited package saved successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        handleCloseEditDialog();
+      } else {
+        console.error('Failed to update package');
+        setSnackbarMessage('Error saving package');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error('Error updating packge:', error);
+    }
+  }
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingPackage, setDeletingPackage] = useState(null);
+  const handleOpenDeleteDialog = (rowData) => {
+    setDeletingPackage(rowData);
+    setDeleteDialogOpen(true);
+  }
+
+  const handleCloseDeleteDialog = () => {
+    setDeletingPackage(null);
+    setDeleteDialogOpen(false);
+  }
+
+  const handleDeletePackage = async () => {
+    try {
+      await axios.delete(`${packageURL}/${deletingPackage._id}`);
+      setSnackbarMessage('Package deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setRefreshTable(prev => !prev);
+    } catch (error) {
+      console.error('Error deleting package:', error);
+      setSnackbarMessage('Error deleting package');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      handleCloseDeleteDialog();
+    }
+  }
 
   // Image Dropzone
   const onDrop = useCallback((acceptedFiles) => {
@@ -229,52 +301,45 @@ const [statusFilter, setStatusFilter] = useState("");
     accept: 'image/*',
    });
 
-  // Change Rows Per Page
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
+  // Datatable Templates
+  const statusBodyTemplate = (rowData) => {
+    return rowData.packageStatus ? 'Active' : 'Inactive';
   };
 
-  // Handle filter data
-  useEffect(() => {
-    let filterPackageData = [...packageData];
+  const statusFilterTemplate = (options) => {
+    return (
+      <Dropdown 
+        value={filters.packageStatus.value}
+        options={[
+          { label: 'Active', value: true },
+          { label: 'Inactive', value: false },
+        ]} 
+        onChange={(e) => {
+          setFilters(prevFilters => ({
+            ...prevFilters,
+            packageStatus: { value: e.value, matchMode: 'equals' }
+          }));
+        }} 
+        placeholder="Select Status"
+      />
+    );
+  };
 
-    if (packageNameFilter) {
-      filterPackageData = filterPackageData.filter((packages) =>
-        packages.packageName.toLowerCase().includes(packageNameFilter.toLowerCase())
-      );
-    }
-
-    if (priceFilter) {
-      filterPackageData = filterPackageData.filter((packages) =>
-        packages.price.toLowerCase().includes(priceFilter.toLowerCase())
-      );
-    }
-
-    if (sortOrderFilter) {
-      filterPackageData = filterPackageData.filter((packages) =>
-        (packages.sortOrder||'').includes(sortOrderFilter)
-      );
-    }
-
-    if (statusFilter) {
-      filterPackageData = filterPackagesData.filter((packages) =>
-        packages.status === "Active" ? packages.activeSwitch : !packages.activeSwitch
-      );
-    }
-
-    setFilteredPackageData(filterPackageData);
-  }, [
-    packageNameFilter, 
-    priceFilter, 
-    sortOrderFilter, 
-    statusFilter, 
-    packageData
-  ]);
-
-  // Filter Package Data
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={6} md={6}>
+          <IconButton color="success" onClick={() => handleOpenEditDialog(rowData)}>
+            <EditIcon />
+          </IconButton>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <IconButton color="error" onClick={() => handleOpenDeleteDialog(rowData)}>
+            <DeleteIcon />
+          </IconButton>
+        </Grid>
+      </Grid>
+    );
   };
 
 
@@ -285,7 +350,7 @@ const [statusFilter, setStatusFilter] = useState("");
           <Grid item xs={12} sm={12}>
             {/* Header */}
             <Box display="flex" justifyContent="space-between" mb={2}>
-              <Typography variant="h1">Package</Typography>
+              <Typography variant="h1">Package Table</Typography>
               {/* Add Button */}
               <Button
               variant="outlined"
@@ -295,103 +360,65 @@ const [statusFilter, setStatusFilter] = useState("");
                 Add Package
               </Button>
             </Box>
-            {/* Package Filter */}
-            <Grid container spacing={2} mb={2}>
-              <Grid item xs={12} md={2.3}>
-                <TextField
-                label="Package Name"
-                variant="outlined"
-                fullWidth
-                value={packageNameFilter}
-                onChange={(e) => setPackageNameFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={2.3}>
-                <TextField
-                  label="Price"
-                  variant="outlined"
-                  fullWidth
-                  value={priceFilter}
-                  onChange={(e) => setPriceFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={2.3}>
-              </Grid>
-              <Grid item xs={12} md={2.3}>
-              <TextField
-                  label="Order"
-                  variant="outlined"
-                  fullWidth
-                  value={sortOrderFilter}
-                  onChange={(e) => setSortOrderFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={2.3}>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    label="Status"
-                  >
-                    <MenuItem value="">
-                      <em>All</em>
-                    </MenuItem>
-                    <MenuItem value="Active">Active</MenuItem>
-                    <MenuItem value="Inactive">Inactive</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-            {/* Package Table */}
-            <Grid container spacing={2} mb={2}>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow className={classes.tableHeadRow}>
-                      {tableHead.map((prop) => (
-                        <TableCell
-                          className={classes.tableCell + classes.tableHeadCell}
-                          key={prop}
-                          style={{ textAlign: "left",
-                           }}
-                        >
-                        {prop}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {filteredPackageData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((packages)=>(
-                      <TableRow key={packages.id}>
-                        <TableCell>{packages.packageName}</TableCell>
-                        <TableCell>{packages.price}</TableCell>
-                        <TableCell>{packages.numberOfTime}</TableCell>
-                        <TableCell>{packages.order}</TableCell>
-                        <TableCell>
-                          <Switch checked={packages.gender} disabled />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton>
-                            <EditIcon/>
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                <TablePagination
-                component="div"
-                count={filteredPackageData.length}
-                page={page}
-                //onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-              </TableContainer>
-            </Grid>
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <DataTable 
+              value={packageDatabase} 
+              paginator 
+              rows={10} 
+              dataKey="id" 
+              filters={filters} 
+              filterDisplay="row" 
+              loading={packageDatabase.length === 0}
+              emptyMessage="No roles found."
+            >
+              <Column
+                field="packageName"
+                header="Package Name"
+                filter
+                filterPlaceholder="Filter by Name"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="packageCode"
+                header="Package Code"
+                filter
+                filterPlaceholder="Filter by Code"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="packagePrice"
+                header="Price"
+                filter
+                filterPlaceholder="Filter by Price"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="packageAmount"
+                header="Number of Time"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="packageOrder"
+                header="Order"
+                filter
+                filterPlaceholder="Filter by Order"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="packageStatus"
+                header="Status"
+                body={statusBodyTemplate}
+                filter
+                filterElement={statusFilterTemplate}
+                style={{ minWidth: '12rem' }}
+              />
+              <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
+            </DataTable>
           </Grid>
         </Grid>
       </Card>
@@ -404,35 +431,50 @@ const [statusFilter, setStatusFilter] = useState("");
         aria-labelledby='alert-dialog-title'
         aria-describedby='alert-dialog-description'
       >
-        <DialogTitle>Add New</DialogTitle>
+        <DialogTitle>
+          <Typography>Create Package</Typography>
+        </DialogTitle>
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
+              <Typography variant="h5">Package Information</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
               label="Package Name"
               variant="outlined"
               fullWidth
               value={dialogPackageName}
-              onChange={(e) => setDialogPackageName(e,"packageName")}
+              onChange={(e) => setDialogPackageName(e.target.value)}
               margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
+              <TextField
+              label="Package Code"
+              variant="outlined"
+              fullWidth
+              value={dialogPackageCode}
+              onChange={(e) => setDialogPackageCode(e.target.value)}
+              margin="dense"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
               label="Price(RM)"
               variant="outlined"
               fullWidth
               value={dialogPrice}
-              onChange={(e) => setDialogPrice(e,"price")}
+              onChange={(e) => setDialogPrice(e.target.value)}
               margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
+            <Grid item xs={6} md={6}>
               <FormControl fullWidth margin="dense">
                 <InputLabel>Category</InputLabel>{" "}
                 <Select
                 value={dialogCategory}
-                onChange={(e) => handleDialogInputChange(e, "category")}
+                onChange={(e) => setDialogCategory(e.target.value)}
                 label="Category"
                 >
                   <MenuItem value="">
@@ -445,217 +487,595 @@ const [statusFilter, setStatusFilter] = useState("");
                 </Select>
               </FormControl>
             </Grid>
-            <Grid container spacing={2}>
-              {/* Unlimited Checkbox */}
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={isUnlimited}
-                      onChange={handleUnlimitedChange}
-                      name="unlimited"
-                      value="unlimited"
+            <Grid item container xs={12} md={12} alignItems="center" spacing={2}>
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Unlimited</Typography>
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isUnlimited}
+                          onChange={handleClickCheckboxUnlimited}
+                          name="unlimited"
+                          value="unlimited"
+                        />
+                      }
                     />
-                  }
-                  label="Unlimited"
-                />
+                  </Grid>
+                </Grid>
               </Grid>
-
-              {/* Conditionally Render Number of Times Input if Unlimited is NOT checked */}
               {!isUnlimited && (
-                <Grid item xs={12} md={6}>
+                <Grid item xs={6} md={6}>
                   <TextField
                     fullWidth
                     label="Number of Times"
                     type="number"
                     variant="outlined"
                     value={dialogNumberOfTime}
-                    onChange={(e) => handleDialogInputChange(e, "numberOfTime")}
+                    onChange={(e) => setDialogNumberOfTime(e.target.value)}
                     margin="dense"
                   />
                 </Grid>
               )}
-            {/* Transferable Switch */}
-              <Grid item xs={12} md={12}>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <Typography>Transferable</Typography>
-                  <Switch
-                    checked={dialogTransferableSwitch}
-                    onChange={handleTransferableSwitchChange}
-                  />
-                </Box>
-              </Grid>
-
-              {/* Individual Package Switch */}
-              <Grid item xs={12} md={12}>
-                <Box display="flex" alignItems="center" mt={2}>
-                  <Typography>Individual Package</Typography>
-                  <Switch
-                    checked={dialogIndividualPackageSwitch}
-                    onChange={handleIndividualPackageSwitchChange}
-                  />
-                </Box>
-              </Grid>
-              {/* Promotion Checkbox */}
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isPromotion}
-                        onChange={handlePromotionChange}
-                        name="promotion"
-                        value="promotion"
-                      />
-                    }
-                    label="Promotion"
-                  />
-                </Grid>
-
-                {/* Conditionally Render Promo Inputs if Promotion is Checked */}
-                {isPromotion && (
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        label="Promo Time"
-                        variant="outlined"
-                        fullWidth
-                        value={dialogPromoTime}
-                        onChange={(e) => handleDialogInputChange(e, "promoTime")}
-                        margin="dense"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        label="Promo Period From"
-                        type="date"
-                        InputLabelProps={{ shrink: true }}
-                        variant="outlined"
-                        fullWidth
-                        value={dialogPromoPeriodFrom}
-                        onChange={(e) => handleDialogInputChange(e, "promoPeriodFrom")}
-                        margin="dense"
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={4}>
-                      <TextField
-                        label="Promo Period To"
-                        type="date"
-                        InputLabelProps={{ shrink: true }}
-                        variant="outlined"
-                        fullWidth
-                        value={dialogPromoPeriodTo}
-                        onChange={(e) => handleDialogInputChange(e, "promoPeriodTo")}
-                        margin="dense"
-                      />
-                    </Grid>
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Transferable</Typography>
                   </Grid>
-                )}
-              </Grid>
-              {/* All Branch Checkbox */}
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={isAllBranch}
-                        onChange={handleAllBranchChange}
-                        name="All Branch"
-                        value="All Branch"
-                      />
-                    }
-                    label="All Branch"
-                  />
-                </Grid>
-
-                {/* Conditionally Render Branch Input if All Branch is NOT checked */}
-                {!isAllBranch && (
-                  <Grid item xs={12} md={12}>
-                    <FormControl fullWidth margin="dense">
-                      <InputLabel>Branch</InputLabel>
-                      <Select
-                        value={dialogBranch}
-                        onChange={(e) => handleDialogInputChange(e, "branch")}
-                        label="Branch"
-                      >
-                        {branchData.map((branch) => (
-                          <MenuItem key={branch.id} value={branch.name}>
-                            {branch.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                  <Grid item>
+                    <Switch
+                      checked={dialogTransferableSwitch}
+                      onChange={handleClickSwitchTransferable}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
                   </Grid>
-                )}
+                </Grid>
               </Grid>
-            <Grid item xs={12} md={12}>
-                  <Box
-                    {...getRootProps()}
-                    sx={{
-                      border: '2px dashed #cccccc',
-                      borderRadius: '4px',
-                      padding: '20px',
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
-                    }}
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Individual Package</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Switch
+                      checked={dialogIndividualPackageSwitch}
+                      onChange={handleClickSwitchIndividualPackage}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={6} md={6}>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Package Validity</InputLabel>{" "}
+                  <Select
+                  value={dialogPackageValidity}
+                  onChange={(e) => setDialogPackageValidity(e.target.value)}
+                  label="Category"
                   >
-                    <input {...getInputProps()} />
-                    {dialogPicture ? (
-                      <img
-                        src={dialogPicture}
-                        alt="Preview"
-                        style={{ maxWidth: '100%', maxHeight: '100%' }}
-                      />
-                    ) : isDragActive ? (
-                      <Typography>Drop the image here ...</Typography>
-                    ) : (
-                      <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
-                    )}
-                  </Box>
-                </Grid>
-            <Grid item xs={12} md={12}>
-              <TextField
-                label="Financial Info"
-                variant="outlined"
-                fullWidth
-                value={dialogFinancialInfo}
-                onChange={(e) => handleDialogInputChange(e, "financialInfo")}
-                margin="dense"
-                />
+                    <MenuItem value="Life Time">Life Time</MenuItem>
+                    <MenuItem value="1 Year">1 Year</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
             <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Promotion</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isPromotion}
+                    onChange={handleClickCheckboxPromotion}
+                    name="promotion"
+                    value="promotion"
+                  />
+                }
+                label="Promotion"
+              />
+            </Grid>
+            {isPromotion && (
+              <>
+                <Grid item xs={4} md={4}>
+                  <TextField
+                    label="Promo Time"
+                    variant="outlined"
+                    fullWidth
+                    value={dialogPromoTime}
+                    onChange={(e) => setDialogPromoTime(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+                <Grid item xs={4} md={4}>
+                  <TextField
+                    label="Promo Period From"
+                    type="date"
+                    InputLabelProps={{ shrink: true }}
+                    variant="outlined"
+                    fullWidth
+                    value={dialogPromoPeriodFrom}
+                    onChange={(e) => setDialogPromoPeriodFrom(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+                <Grid item xs={4} md={4}>
+                  <TextField
+                    label="Promo Period To"
+                    type="date"
+                    InputLabelProps={{ shrink: true }}
+                    variant="outlined"
+                    fullWidth
+                    value={dialogPromoPeriodTo}
+                    onChange={(e) => setDialogPromoPeriodTo(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+              </>
+            )}
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Branch</Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isAllBranch}
+                    onChange={handleClickCheckboxAllBranch}
+                    name="All Branch"
+                    value="All Branch"
+                  />
+                }
+                label="All Branch"
+              />
+            </Grid>
+            {!isAllBranch && (
+              <Grid item xs={12} md={12}>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Branch</InputLabel>
+                  <Select
+                    value={dialogBranch}
+                    onChange={(e) => setDialogBranch(e.target.value)}
+                    label="Branch"
+                  >
+                    {branchDatabase.map((branch) => (
+                      <MenuItem key={branch.id} value={branch.name}>
+                        {branch.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Package Image</Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Box
+                {...getRootProps()}
+                sx={{
+                  border: '2px dashed #cccccc',
+                  borderRadius: '4px',
+                  padding: '20px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
+                }}
+              >
+                <input {...getInputProps()} />
+                {dialogPicture ? (
+                  <img
+                    src={dialogPicture}
+                    alt="Preview"
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
+                  />
+                ) : isDragActive ? (
+                  <Typography>Drop the image here ...</Typography>
+                ) : (
+                  <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Other Settings</Typography>
+            </Grid>
+            <Grid item container xs={6} md={6} alignItems="center" spacing={2}>
+              <Grid item xs={12} md={12}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Active/Inactive</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Switch
+                      checked={dialogActiveSwitch}
+                      onChange={handleClickSwitchActiveInactive}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={6} md={6}>
               <TextField
                 label="Order"
                 variant="outlined"
                 fullWidth
+                type="number"
                 value={dialogOrder}
-                onChange={(e) => handleDialogInputChange(e, "order")}
+                onChange={(e) => setDialogOrder(e.target.value)}
                 margin="dense"
               />
             </Grid>
-            <Grid item xs={12} md={12}>
-              <Box display="flex" alignItems="center" mt={2}>
-                
-                <Typography>Active</Typography>
-                <Switch
-                  checked={dialogActiveSwitch}
-                  onChange={handleActiveSwitchChange}
-                />
-              </Box>
-            </Grid>
-          </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddNewPackage} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveNewPackage} color="primary">
-            Save
-          </Button>
+          <Button onClick={handleSaveNewPackage} variant="contained">Save</Button>
+          <Button onClick={handleCloseAddNewPackage} color="error" variant="outlined">Cancel</Button>
         </DialogActions>
       </Dialog>
+      {/* Dialog Edit Package */}
+      <Dialog
+        fullWidth
+        maxWidth="md"
+        open={editDialogOpen}
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
+      >
+        <DialogTitle>
+          <Typography>Create Package</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Package Information</Typography>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+              label="Package Name"
+              variant="outlined"
+              fullWidth
+              value={dialogPackageName}
+              onChange={(e) => setDialogPackageName(e.target.value)}
+              margin="dense"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+              label="Package Code"
+              variant="outlined"
+              fullWidth
+              value={dialogPackageCode}
+              onChange={(e) => setDialogPackageCode(e.target.value)}
+              margin="dense"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+              label="Price(RM)"
+              variant="outlined"
+              fullWidth
+              value={dialogPrice}
+              onChange={(e) => setDialogPrice(e.target.value)}
+              margin="dense"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Category</InputLabel>{" "}
+                <Select
+                value={dialogCategory}
+                onChange={(e) => setDialogCategory(e.target.value)}
+                label="Category"
+                >
+                  <MenuItem value="">
+                  <em>None</em>
+                  </MenuItem>
+                  <MenuItem value="Single Steam">Single Steam</MenuItem>
+                  <MenuItem value="Voucher">Voucher</MenuItem>
+                  <MenuItem value="Normal">Normal</MenuItem>
+                  <MenuItem value="Promotion">Promotion</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item container xs={12} md={12} alignItems="center" spacing={2}>
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Unlimited</Typography>
+                  </Grid>
+                  <Grid item>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={isUnlimited}
+                          onChange={handleClickCheckboxUnlimited}
+                          name="unlimited"
+                          value="unlimited"
+                        />
+                      }
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              {!isUnlimited && (
+                <Grid item xs={6} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Number of Times"
+                    type="number"
+                    variant="outlined"
+                    value={dialogNumberOfTime}
+                    onChange={(e) => setDialogNumberOfTime(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+              )}
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Transferable</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Switch
+                      checked={dialogTransferableSwitch}
+                      onChange={handleClickSwitchTransferable}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={6} md={6}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Individual Package</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Switch
+                      checked={dialogIndividualPackageSwitch}
+                      onChange={handleClickSwitchIndividualPackage}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+              <Grid item xs={6} md={6}>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Package Validity</InputLabel>
+                  <Select
+                  value={dialogPackageValidity}
+                  onChange={(e) => setDialogPackageValidity(e.target.value)}
+                  label="Package Validity"
+                  >
+                    <MenuItem value="Life Time">Life Time</MenuItem>
+                    <MenuItem value="1 Year">1 Year</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Promotion</Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isPromotion}
+                    onChange={handleClickCheckboxPromotion}
+                    name="promotion"
+                    value="promotion"
+                  />
+                }
+                label="Promotion"
+              />
+            </Grid>
+            {isPromotion && (
+              <>
+                <Grid item xs={4} md={4}>
+                  <TextField
+                    label="Promo Time"
+                    variant="outlined"
+                    fullWidth
+                    value={dialogPromoTime}
+                    onChange={(e) => setDialogPromoTime(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+                <Grid item xs={4} md={4}>
+                  <TextField
+                    label="Promo Period From"
+                    type="date"
+                    InputLabelProps={{ shrink: true }}
+                    variant="outlined"
+                    fullWidth
+                    value={dialogPromoPeriodFrom}
+                    onChange={(e) => setDialogPromoPeriodFrom(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+                <Grid item xs={4} md={4}>
+                  <TextField
+                    label="Promo Period To"
+                    type="date"
+                    InputLabelProps={{ shrink: true }}
+                    variant="outlined"
+                    fullWidth
+                    value={dialogPromoPeriodTo}
+                    onChange={(e) => setDialogPromoPeriodTo(e.target.value)}
+                    margin="dense"
+                  />
+                </Grid>
+              </>
+            )}
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Branch</Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isAllBranch}
+                    onChange={handleClickCheckboxAllBranch}
+                    name="All Branch"
+                    value="All Branch"
+                  />
+                }
+                label="All Branch"
+              />
+            </Grid>
+            {!isAllBranch && (
+              <Grid item xs={12} md={12}>
+                <FormControl fullWidth margin="dense">
+                  <InputLabel>Branch</InputLabel>
+                  <Select
+                    value={dialogBranch}
+                    onChange={(e) => setDialogBranch(e.target.value)}
+                    label="Branch"
+                  >
+                    {branchDatabase.map((branch) => (
+                      <MenuItem key={branch.id} value={branch.name}>
+                        {branch.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            )}
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Package Image</Typography>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Box
+                {...getRootProps()}
+                sx={{
+                  border: '2px dashed #cccccc',
+                  borderRadius: '4px',
+                  padding: '20px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
+                }}
+              >
+                <input {...getInputProps()} />
+                {dialogPicture ? (
+                  <img
+                    src={dialogPicture}
+                    alt="Preview"
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
+                  />
+                ) : isDragActive ? (
+                  <Typography>Drop the image here ...</Typography>
+                ) : (
+                  <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Typography variant="h5">Other Settings</Typography>
+            </Grid>
+            <Grid item container xs={6} md={6} alignItems="center" spacing={2}>
+              <Grid item xs={12} md={12}>
+                <Grid container alignItems="center" justifyContent="space-between">
+                  <Grid item>
+                    <Typography>Active/Inactive</Typography>
+                  </Grid>
+                  <Grid item>
+                    <Switch
+                      checked={dialogActiveSwitch}
+                      onChange={handleClickSwitchActiveInactive}
+                      inputProps={{ 'aria-label': 'controlled' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                label="Order"
+                variant="outlined"
+                fullWidth
+                type="number"
+                value={dialogOrder}
+                onChange={(e) => setDialogOrder(e.target.value)}
+                margin="dense"
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleSaveEditPackage} variant="contained">Save</Button>
+          <Button onClick={handleCloseEditDialog} color="error" variant="outlined">Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog Delete Package */}
+      <Dialog
+        fullWidth
+        maxWidth          ="md"
+        open              ={deleteDialogOpen}
+        aria-labelledby   ="alert-dialog-title"
+        aria-describedby  ="alert-dialog-description"
+      >
+        <DialogTitle>
+          <Typography>Confirm Deletion</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography>Are you sure you want to delete the role: {deletingPackage?.packageName}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" variant="contained" onClick={handleDeletePackage}>Delete</Button>
+          <Button variant="outlined" onClick={handleCloseDeleteDialog}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Snackbar for alerts */}
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleCloseSnackbar}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
 
   );
