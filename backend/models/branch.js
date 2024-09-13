@@ -1,28 +1,41 @@
 const mongoose = require('mongoose');
 
 const branchSchema = new mongoose.Schema({
-  branch_code: { type: String, required: true },
-  branch_name: { type: String, required: true },
-  area_name: { type: String, required: true },
-  address: { type: String, required: true },
-  google_link: { type: String, required: false },
-  waze_link: { type: String, required: false },
-  operating_from_hours: { type: Date, required: true, timestamps: true },
-  operating_to_hours: { type: Date, required: true, timestamps: true },
-  whatsappno: { type: String, required: true },
-  staff: { type: mongoose.Schema.Types.ObjectId, ref: 'staff' },
-  paymentkey: { type: String },
-  apikey: { type: String },
-  tax: { type: Boolean, required: true },
-  tax_percent: { type: Number },
-  branch_percent: { type: Number },
-  image_url: { type: String },
-  image_data: { type: String },
-  hqbranch: { type: Boolean, required: true },
+  branchCode: { type: String, required: true },
+  branchName: { type: String, required: true },
+  areaName: { type: String, required: true },
+  branchAddress: { type: String, required: true },
+  googleLink: { type: String, required: false },
+  wazeLink: { type: String, required: false },
+  operatingStart: { type: Date, required: true, timestamps: true },
+  operatingEnd: { type: Date, required: true, timestamps: true },
+  whatsappNo: { type: String, required: true },
+  staffName: { type: mongoose.Schema.Types.ObjectId, ref: 'staff' },
+  paymentKey: { type: String },
+  apiKey: { type: String },
+  taxStatus: { type: Boolean, required: true },
+  taxPercent: { type: Number },
+  branchPercent: { type: Number },
+  imageUrl: { type: String },
+  imageData: { type: String },
+  hqStatus: { type: Boolean, required: true },
   sortorder: { type: Number, default: 1 },
-  status_active: { type: Boolean, required: true },
+  branchStatus: { type: Boolean, required: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  deletedAt: { type: Date, default: null },
 });
+
+branchSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+// Soft delete method
+branchSchema.methods.softDelete = function() {
+  this.deletedAt = Date.now();
+  return this.save();
+};
 
 const Branch = mongoose.model('Branch', branchSchema);
 
