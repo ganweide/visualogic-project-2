@@ -82,7 +82,7 @@ const Branch = () => {
         setStaffDatabase(staffResponse.data);
         const transformedBranchData = branchResponse.data.map(branch => ({
           ...branch,
-          staffName: staffResponse.data.find(staff => staff._id === branch.staffName)?.staffName || 'Unknown Branch',
+          staffName: staffResponse.data.find(staff => staff._id === branch.staffName)?.staffName || 'Unknown Staff',
         }));
         setBranchDatabase(transformedBranchData);
       } catch (error) {
@@ -206,14 +206,18 @@ const Branch = () => {
         },
       });
 
-      const newBranch = response.data;
-      alert('Branch created successfully!');
-      console.log('New branch added:', newBranch);
+
+      console.log('New branch added: ',response.data);
       setRefreshTable(response.data);
+      setSnackbarMessage('Branch saved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
       handleCloseAddNewBranchDialog();
     } catch (error) {
-      alert('Failed to save branch');
-      console.error('Error:', error);
+      console.error('Error: ', error);
+      setSnackbarMessage('Error saving branch');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 

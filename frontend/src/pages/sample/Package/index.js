@@ -166,7 +166,7 @@ const Package = () => {
       handleCloseAddNewPackage();
     } catch (error) {
       console.error('Error: ', error);
-      setSnackbarMessage('Error saving role');
+      setSnackbarMessage('Error saving package');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     }

@@ -234,15 +234,17 @@ const Staff = () => {
       };
 
       const response = await axios.post(staffURL, data);
-
-      const newStaff = response.data;
-      alert('Staff created successfully!!');
-      console.log('New Staff added:', newStaff);
+      console.log('New staff added: ',response.data);
       setRefreshTable(response.data);
+      setSnackbarMessage('Staff saved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
       handleCloseAddNewStaffDialog();
     } catch (error) {
-      alert('Failed to save Staff');
-      console.error('Error:', error);
+      console.error('Error: ', error);
+      setSnackbarMessage('Error saving staff');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 
