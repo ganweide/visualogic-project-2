@@ -648,7 +648,7 @@ const Package = () => {
                     label="Branch"
                   >
                     {branchDatabase.map((branch) => (
-                      <MenuItem key={branch.id} value={branch.name}>
+                      <MenuItem key={branch._id} value={branch.name}>
                         {branch.name}
                       </MenuItem>
                     ))}
