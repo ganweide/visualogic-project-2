@@ -182,7 +182,7 @@ const Role2 = () => {
       setSnackbarMessage('Role saved successfully');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
-      setAddNewRoleDialogOpen(false);
+      handleCloseAddNewRoleDialog();
     } catch (error) {
       console.error('Error saving role:', error);
       setSnackbarMessage('Error saving role');
