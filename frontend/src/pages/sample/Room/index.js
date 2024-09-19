@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Button,
   Grid,
@@ -26,41 +26,40 @@ import {
   TableHead,
   TableRow,
   Divider,
+  Snackbar,
+  Alert,
 } from "@mui/material";
-import {
-  PersonAdd as PersonAddIcon,
-  Edit as EditIcon,
-} from "@mui/icons-material";
-import axios from "axios";
 
-import Styles from "./style";
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
+
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 const roomURL = "http://localhost:5000/api/room";
 const floorURL = "http://localhost:5000/api/floor";
 const branchURL = "http://localhost:5000/api/branches";
-const useStyles = makeStyles(Styles);
 
 const Room = () => {
-  const classes = useStyles();
-  const tableHead = ["Room Number", "Floor", "Branch", "No of Person", "Gender", "Order", "Status"];
-  const [roomData, setRoomData] = useState([]);
-  const [filteredRoomData, setFilteredRoomData] = useState([]);
-  const [floorData, setFloorData] = useState([]);
-  const [branchData, setBranchData] = useState([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [roomDatabase, setRoomDatabase] = useState([]);
+  const [floorDatabase, setFloorDatabase] = useState([]);
+  const [branchDatabase, setBranchDatabase] = useState([]);
+  const [refreshTable, setRefreshTable] = useState([]);
 
-  // Filter State
-  const [roomNumberFilter, setRoomNumberFilter] = useState("");
-  const [floorFilter, setFloorFilter] = useState("");
-  const [branchFilter, setBranchFilter] = useState("");
-  const [numberOfPersonFilter, setNumberOfPersonFilter] = useState("");
-  const [genderFilter, setGenderFilter] = useState("");
-  const [sortOrderFilter, setSortOrderFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [filters, setFilters] = useState({
+    branchName: { value: null, matchMode: 'contains' },
+    floorNo: { value: null, matchMode: 'equals' },
+    roomNo: { value: null, matchMode: 'equals' },
+    roomPersonNo: { value: null, matchMode: 'equals' },
+    roomGender: { value: null, matchMode: 'contains' },
+    roomOrder: { value: null, matchMode: 'equals' },
+    roomStatus: { value: null, matchMode: 'equals' },
+  });
 
   // Dialog Add New
-  const [openAddNewRoom, setOpenAddNewRoom] = useState(false);
   const [dialogRoomNumber, setDialogRoomNumber] = useState("");
   const [dialogFloor, setDialogFloor] = useState("");
   const [dialogBranch, setDialogBranch] = useState("");
@@ -72,110 +71,109 @@ const Room = () => {
 
   // Fetch Room Data from API
   useEffect(() => {
-    axios.get(roomURL).then((response) => {
-      setRoomData(response.data);
-      setFilteredRoomData(response.data);
-    });
-
-    axios.get(floorURL).then((response) => {
-      setFloorData(response.data);
-    });
-
-    axios.get(branchURL).then((response) => {
-      setBranchData(response.data);
-    });
-  }, []);
-
-  // Handle filter data
-  useEffect(() => {
-    let filterRoomData = [...roomData];
-
-    if (roomNumberFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        (room.setDialogRoomNumber||'').includes(roomNumberFilter)
-      );
+    const fetchData = async () => {
+      try {
+        const [roomResponse, floorResponse, branchResponse] = await Promise.all([
+          axios.get(roomURL),
+          axios.get(floorURL),
+          axios.get(branchURL),
+        ])
+        setFloorDatabase(floorResponse.data);
+        setBranchDatabase(branchResponse.data);
+        const transformedRoomData = roomResponse.data.map(room => ({
+          ...room,
+          branchName: branchResponse.data.find(branch => branch._id === room.branchName)?.branchName || 'Unknown Branch',
+          floorNo: floorResponse.data.find(floor => floor._id === room.floorNo)?.floorNo || 'Unknown Floor',
+        }))
+        setRoomDatabase(transformedRoomData);
+      } catch (error) {
+        console.log(error);
+      }
     }
+    fetchData();
+  }, [refreshTable]);
 
-    if (floorFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        room.floor === floorFilter.includes(floorFilter)
-      );
-    }
-
-    if (branchFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        room.branch=== branchFilter.includes(branchFilter)
-      );
-    }
-
-    if (numberOfPersonFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        (room.numberOfPerson||'').includes(numberOfPersonFilter)
-      );
-    }
-
-    if (genderFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        (room.gender||'').includes(genderFilter)
-      );
-    }
-
-    if (sortOrderFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        (room.sortOrder||'').includes(sortOrderFilter)
-      );
-    }
-
-    if (statusFilter) {
-      filterRoomData = filterRoomData.filter((room) =>
-        room.status === "Active" ? room.activeSwitch : !room.activeSwitch
-      );
-    }
-
-    setFilteredRoomData(filterRoomData);
-  }, [
-    roomData,
-    roomNumberFilter,
-    floorFilter,
-    branchFilter,
-    numberOfPersonFilter,
-    genderFilter,
-    sortOrderFilter,
-    statusFilter,
-  ]);
-
-
-  // Filter Room Data
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  // Datatable Templates
+  const statusBodyTemplate = (rowData) => {
+    return rowData.roomStatus ? 'Active' : 'Inactive';
   };
 
-  // Change Rows Per Page
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const statusFilterTemplate = (options) => {
+    return (
+      <Dropdown 
+        value={filters.roomStatus.value}
+        options={[
+          { label: 'Active', value: true },
+          { label: 'Inactive', value: false },
+        ]} 
+        onChange={(e) => {
+          setFilters(prevFilters => ({
+            ...prevFilters,
+            roomStatus: { value: e.value, matchMode: 'equals' }
+          }));
+        }} 
+        placeholder="Select Room"
+      />
+    );
   };
 
-  // Open Add New Room Dialog
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={6} md={6}>
+          <IconButton color="success" onClick={() => handleOpenEditDialog(rowData)}>
+            <EditIcon />
+          </IconButton>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <IconButton color="error" onClick={() => handleOpenDeleteDialog(rowData)}>
+            <DeleteIcon />
+          </IconButton>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  // Alert Box
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
+  // Dialog Actions
+  const [openAddNewRoom, setOpenAddNewRoom] = useState(false);
   const handleOpenAddNewRoom = () => {
     setOpenAddNewRoom(true);
   };
-  // Close Add New Room Dialog
   const handleCloseAddNewRoom = () => {
+    setDialogRoomNumber("");
+    setDialogFloor("");
+    setDialogBranch("");
+    setDialogNumberOfPerson("");
+    setDialogGender("");
+    setDialogPicture("");
+    setDialogOrder("");
+    setDialogActiveSwitch(true);
     setOpenAddNewRoom(false);
   };
 
   const handleSaveNewRoom = async () => {
     try{
     const data = {
-      number: dialogRoomNumber,
-      floor: dialogFloor,
-      branch: dialogBranch,
-      noOfPerson: dialogNumberOfPerson,
-      gender: dialogGender,
-      picture: dialogPicture,
-      order: dialogOrder,
-      activeSwitch: dialogActiveSwitch,
+      roomNo: dialogRoomNumber,
+      floorNo: dialogFloor,
+      branchName: dialogBranch,
+      roomPersonNo: dialogNumberOfPerson,
+      roomGender: dialogGender,
+      roomFloorUrl: dialogPicture,
+      roomOrder: dialogOrder,
+      roomStatus: dialogActiveSwitch,
     };
 
     const response = await axios.post(roomURL, data, {
@@ -184,66 +182,127 @@ const Room = () => {
       },
     });
 
-    const newRoom = response.data;
-    alert("New Room Added Successfully");
-    console.log('New room added: ',newRoom);
-    setRefreshTable(response.data);
-    handleCloseAddNewRoom();
+      console.log('New room added: ',response.data);
+      setRefreshTable(response.data);
+      setSnackbarMessage('Room saved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      handleCloseAddNewRoom();
     } catch (error) {
-      alert("Failed to add new room");
-      console.error("Error: ", error);
+      console.error('Error: ', error);
+      setSnackbarMessage('Error saving room');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   };
 
-  // Handle Dialog Input Change
-  const handleDialogInputChange = (e, prop) => {
-    const value = e.target.value;
-    switch (prop) {
-      case "roomNumber":
-        setDialogRoomNumber(value);
-        break;
-      case "floor":
-        setDialogFloor(value);
-        break;
-      case "branch":
-        setDialogBranch(value);
-        break;
-      case "numberOfPerson":
-        setDialogNumberOfPerson(value);
-        break;
-      case "gender":
-        setDialogGender(value);
-        break;
-      case "picture":
-        setDialogPicture(value);
-        break;
-      case "order":
-        setDialogOrder(value);
-        break;
-      default:
-        break;
-    }
-  };
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingRoomId, setEditingRoomId] = useState(null);
+  const handleOpenEditDialog = (rowData) => {
+    setEditingRoomId(rowData._id);
+    setDialogRoomNumber(rowData.roomNo);
+    setDialogFloor(floorDatabase.find(floor => floor.floorNo === rowData.floorNo)._id);
+    setDialogBranch(branchDatabase.find(branch => branch.branchName === rowData.branchName)._id);
+    setDialogNumberOfPerson(rowData.roomPersonNo);
+    setDialogGender(rowData.roomGender);
+    setDialogPicture(rowData.roomFloorUrl);
+    setDialogOrder(rowData.roomOrder);
+    setDialogActiveSwitch(rowData.roomStatus);
+    setEditDialogOpen(true);
+  }
 
-  // Handle Active Switch Change
+  const handleCloseEditDialog = () => {
+    setDialogRoomNumber("");
+    setDialogFloor("");
+    setDialogBranch("");
+    setDialogNumberOfPerson("");
+    setDialogGender("");
+    setDialogPicture("");
+    setDialogOrder("");
+    setDialogActiveSwitch(true);
+    setEditDialogOpen(false);
+  }
+
+  const handleSaveEditRoom = async () => {
+    try {
+      const updatedRoomData = {
+        roomNo: dialogRoomNumber,
+        floorNo: dialogFloor,
+        branchName: dialogBranch,
+        roomPersonNo: dialogNumberOfPerson,
+        roomGender: dialogGender,
+        roomFloorUrl: dialogPicture,
+        roomOrder: dialogOrder,
+        roomStatus: dialogActiveSwitch,
+      };
+  
+      const response = await axios.put(`${roomURL}/${editingRoomId}`, updatedRoomData);
+      
+      if (response.status === 200) {
+        console.log('Room updated successfully');
+        setRefreshTable(prev => !prev);
+        setSnackbarMessage('Edited room saved successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+        handleCloseEditDialog();
+      } else {
+        console.error('Failed to update room');
+        setSnackbarMessage('Error saving room');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error('Error updating room:', error);
+    }
+  }
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingRoom, setDeletingRoom] = useState(null);
+  const handleOpenDeleteDialog = (rowData) => {
+    setDeletingRoom(rowData);
+    setDeleteDialogOpen(true);
+  }
+
+  const handleCloseDeleteDialog = () => {
+    setDeletingRoom(null);
+    setDeleteDialogOpen(false);
+  }
+
+  const handleDeleteRoom = async () => {
+    try {
+      await axios.delete(`${roomURL}/${deletingRoom._id}`);
+      setSnackbarMessage('Room deleted successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
+      setRefreshTable(prev => !prev);
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      setSnackbarMessage('Error deleting room');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    } finally {
+      handleCloseDeleteDialog();
+    }
+  }
+
+  // Switch Actions
   const handleActiveSwitchChange = () => {
     setDialogActiveSwitch(!dialogActiveSwitch);
   };
 
-  // Use Dropzone
-  const { getRootProps, getInputProps } = useDropzone({
+  // Image Dropzone
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: "image/*",
     onDrop: (acceptedFiles) => {
       const file = acceptedFiles[0];
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onloadend = () => {
         setDialogPicture(reader.result);
       };
       reader.readAsDataURL(file);
     },
   });
 
-  // Destroy Dropzone
   const dropzoneProps = getRootProps();
   const inputProps = getInputProps();
 
@@ -264,162 +323,78 @@ const Room = () => {
                 Add Room
               </Button>
             </Box>
-            {/*Room Filter */}
-            <Grid container spacing={2} mb={2}>
-              <Grid item xs={12} md={1.7}>
-                <TextField
-                  label="Room Name"
-                  variant="outlined"
-                  fullWidth
-                  value={roomNumberFilter}
-                  onChange={(e) => setRoomNumberFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={1.7}>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Floor</InputLabel>
-                  <Select
-                    value={floorFilter}
-                    onChange={(e) => setFloorFilter(e.target.value)}
-                    label="Floor"
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {floorData.map((floor) => (
-                      <MenuItem key={floor.id} value={floor.name}>
-                        {floor.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={1.7}>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Branch</InputLabel>
-                  <Select
-                    value={branchFilter}
-                    onChange={(e) => setBranchFilter(e.target.value)}
-                    label="Branch"
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {branchData.map((branch) => (
-                      <MenuItem key={branch.id} value={branch.name}>
-                        {branch.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={1.7}>
-                <TextField
-                  label="No of Person"
-                  variant="outlined"
-                  fullWidth
-                  value={numberOfPersonFilter}
-                  onChange={(e) => setNumberOfPersonFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={1.7}>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Gender</InputLabel>
-                  <Select
-                    value={genderFilter}
-                    onChange={(e) => setGenderFilter(e.target.value)}
-                    label="Gender"
-                  >
-                    <MenuItem value="">
-                      <em>All</em>
-                    </MenuItem>
-                    <MenuItem value="Active">Male</MenuItem>
-                    <MenuItem value="Inactive">Female</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={1.7}>
-                <TextField
-                  label="Sort Order"
-                  variant="outlined"
-                  fullWidth
-                  value={sortOrderFilter}
-                  onChange={(e) => setSortOrderFilter(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} sm={1.7}>
-                <FormControl variant="outlined" fullWidth>
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    label="Status"
-                  >
-                    <MenuItem value="">
-                      <em>All</em>
-                    </MenuItem>
-                    <MenuItem value="Active">Active</MenuItem>
-                    <MenuItem value="Inactive">Inactive</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2} mb={2}></Grid>
-            {/* Room Table */}
-            <TableContainer>
-              <Table>
-                <TableHead>
-                <TableRow className={classes.tableHeadRow}>
-                  {tableHead.map((prop) => (
-                    <TableCell
-                      className ={classes.tableCell + classes.tableHeadCell}
-                      key       ={prop}
-                      style     ={{
-                        textAlign: "left",
-                      }}
-                    >
-                      {prop}
-                    </TableCell>
-                  ))}
-                </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredRoomData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((room) => (
-                      <TableRow key={room.id}>
-                        <TableCell>{room.number}</TableCell>
-                        <TableCell>{room.floor}</TableCell>
-                        <TableCell>{room.branch}</TableCell>
-                        <TableCell>{room.noOfPerson}</TableCell>
-                        <TableCell>{room.gender}</TableCell>
-                        <TableCell>{room.order}</TableCell>
-                        <TableCell>
-                          <Switch checked={room.activeSwitch} disabled />
-                        </TableCell>
-                        <TableCell>
-                          <IconButton>
-                            <EditIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-              <TablePagination
-                component="div"
-                count={filteredRoomData.length}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
+          </Grid>
+          <Grid item xs={12} md={12}>
+            <DataTable 
+              value={roomDatabase} 
+              paginator 
+              rows={10} 
+              dataKey="id" 
+              filters={filters} 
+              filterDisplay="row" 
+              loading={roomDatabase.length === 0}
+              emptyMessage="No room found."
+            >
+              <Column
+                field="branchName"
+                header="Branch"
+                filter
+                filterPlaceholder="Filter by Branch"
+                style={{ minWidth: '12rem' }}
               />
-            </TableContainer>
+              <Column
+                field="floorNo"
+                header="Floor No."
+                filter
+                filterPlaceholder="Filter by No"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="roomNo"
+                header="Room No."
+                filter
+                filterPlaceholder="Filter by No"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="roomPersonNo"
+                header="No. of Persons"
+                filter
+                filterPlaceholder="Filter by No"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="roomGender"
+                header="Gender"
+                filter
+                filterPlaceholder="Filter by Gender"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="roomOrder"
+                header="Order"
+                filter
+                filterPlaceholder="Filter by Order"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="roomStatus"
+                header="Status"
+                body={statusBodyTemplate}
+                filter
+                filterElement={statusFilterTemplate}
+                style={{ minWidth: '12rem' }}
+              />
+              <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
+            </DataTable>
           </Grid>
         </Grid>
       </Card>
-      {/* Add New Room Dialog */}{" "}
+      {/* Add New Room Dialog */}
       <Dialog
         fullWidth
         maxWidth="md"
@@ -438,13 +413,11 @@ const Room = () => {
                 <InputLabel>Branch</InputLabel>
                 <Select
                   value={dialogBranch}
-                  onChange={(e) => handleDialogInputChange(e, "branch")}
+                  onChange={(e) => setDialogBranch(e.target.value)}
                   label="Branch"
                 >
-                  
-                  {branchData.map((branch) => (
-                    <MenuItem key={branch.id} value={branch.name}>
-                      
+                  {branchDatabase.map((branch) => (
+                    <MenuItem key={branch._id} value={branch._id}>
                       {branch.branchName}
                     </MenuItem>
                   ))}
@@ -456,11 +429,11 @@ const Room = () => {
                 <InputLabel>Floor</InputLabel>
                 <Select
                   value={dialogFloor}
-                  onChange={(e) => setDialogFloor(e, "floor")}
+                  onChange={(e) => setDialogFloor(e.target.value)}
                   label="Floor"
                 >
-                  {floorData.map((floor) => (
-                    <MenuItem key={floor.id} value={floor.name}>
+                  {floorDatabase.map((floor) => (
+                    <MenuItem key={floor._id} value={floor._id}>
                       {floor.floorNo}
                     </MenuItem>
                   ))}
@@ -473,7 +446,7 @@ const Room = () => {
                 variant="outlined"
                 fullWidth
                 value={dialogRoomNumber}
-                onChange={(e) => setDialogRoomNumber(e, "roomNumber")}
+                onChange={(e) => setDialogRoomNumber(e.target.value)}
                 margin="dense"
               />
             </Grid>
@@ -483,7 +456,7 @@ const Room = () => {
                 variant="outlined"
                 fullWidth
                 value={dialogNumberOfPerson}
-                onChange={(e) => handleDialogInputChange(e, "numberOfPerson")}
+                onChange={(e) => setDialogNumberOfPerson(e.target.value)}
                 margin="dense"
               />
             </Grid>
@@ -492,7 +465,7 @@ const Room = () => {
                 <InputLabel>Gender</InputLabel>
                 <Select
                 value={dialogGender}
-                onChange={(e) => handleDialogInputChange(e, "gender")}
+                onChange={(e) => setDialogGender(e.target.value)}
                 label="Gender"
                 >
                   <MenuItem value="Both">Both</MenuItem>
@@ -509,28 +482,26 @@ const Room = () => {
                 {...dropzoneProps}
                 sx={{
                   border: "2px dashed #ddd",
-                  borderRadius: 2,
-                  padding: 2,
+                  borderRadius: "4px",
+                  padding: "20px",
                   textAlign: "center",
                   cursor: "pointer",
-                  mt: 2,
+                  backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
                 }}
               >
                 <input {...inputProps} />
-                <Typography>
-                  Drag &apos;n&lsquo; drop a picture here, or click to select
-                  one
-                </Typography>
-              </Box>
-              {dialogPicture && (
-                <Box sx={{ mt: 2 }}>
+                {dialogPicture ? (
                   <img
                     src={dialogPicture}
                     alt="Preview"
-                    style={{ maxWidth: "100%", height: "auto" }}
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
                   />
-                </Box>
-              )}
+                ) : isDragActive ? (
+                  <Typography>Drop the image here ...</Typography>
+                ) : (
+                  <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                )}
+              </Box>
             </Grid>
             <Grid item xs={12} md={12}>
               <Divider />
@@ -541,7 +512,7 @@ const Room = () => {
                 variant="outlined"
                 fullWidth
                 value={dialogOrder}
-                onChange={(e) => handleDialogInputChange(e, "order")}
+                onChange={(e) => setDialogOrder(e.target.value)}
                 margin="dense"
               />
             </Grid>
@@ -561,11 +532,194 @@ const Room = () => {
             Cancel
           </Button>
           <Button onClick={handleSaveNewRoom} color="primary">
-            
             Save
           </Button>
         </DialogActions>
       </Dialog>
+      {/* Edit Room Dialog */}
+      <Dialog
+        fullWidth
+        maxWidth="md"
+        open={editDialogOpen}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle>
+          <Typography>Edit Room</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Branch</InputLabel>
+                <Select
+                  value={dialogBranch}
+                  onChange={(e) => setDialogBranch(e.target.value)}
+                  label="Branch"
+                >
+                  {branchDatabase.map((branch) => (
+                    <MenuItem key={branch._id} value={branch._id}>
+                      {branch.branchName}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Floor</InputLabel>
+                <Select
+                  value={dialogFloor}
+                  onChange={(e) => setDialogFloor(e.target.value)}
+                  label="Floor"
+                >
+                  {floorDatabase.map((floor) => (
+                    <MenuItem key={floor._id} value={floor._id}>
+                      {floor.floorNo}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                label="Room No"
+                variant="outlined"
+                fullWidth
+                value={dialogRoomNumber}
+                onChange={(e) => setDialogRoomNumber(e.target.value)}
+                margin="dense"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <TextField
+                label="No of Person"
+                variant="outlined"
+                fullWidth
+                value={dialogNumberOfPerson}
+                onChange={(e) => setDialogNumberOfPerson(e.target.value)}
+                margin="dense"
+              />
+            </Grid>
+            <Grid item xs={6} md={6}>
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Gender</InputLabel>
+                <Select
+                value={dialogGender}
+                onChange={(e) => setDialogGender(e.target.value)}
+                label="Gender"
+                >
+                  <MenuItem value="Both">Both</MenuItem>
+                  <MenuItem value="Male">Male</MenuItem>
+                  <MenuItem value="Female">Female</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Box
+                {...dropzoneProps}
+                sx={{
+                  border: "2px dashed #ddd",
+                  borderRadius: "4px",
+                  padding: "20px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
+                }}
+              >
+                <input {...inputProps} />
+                {dialogPicture ? (
+                  <img
+                    src={dialogPicture}
+                    alt="Preview"
+                    style={{ maxWidth: '100%', maxHeight: '100%' }}
+                  />
+                ) : isDragActive ? (
+                  <Typography>Drop the image here ...</Typography>
+                ) : (
+                  <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
+                )}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Divider />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <TextField
+                label="Order"
+                variant="outlined"
+                fullWidth
+                value={dialogOrder}
+                onChange={(e) => setDialogOrder(e.target.value)}
+                margin="dense"
+              />
+            </Grid>
+            <Grid item xs={12} md={12}>
+              <Box display="flex" alignItems="center" mt={2}>
+                <Typography>Active</Typography>
+                <Switch
+                  checked={dialogActiveSwitch}
+                  onChange={handleActiveSwitchChange}
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEditDialog} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleSaveEditRoom} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog Delete Floor */}
+      <Dialog
+        fullWidth
+        maxWidth          ="md"
+        open              ={deleteDialogOpen}
+        aria-labelledby   ="alert-dialog-title"
+        aria-describedby  ="alert-dialog-description"
+      >
+        <DialogTitle>
+          <Typography>Confirm Deletion</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography>Are you sure you want to delete the room: {deletingRoom?.roomNo}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" variant="contained" onClick={handleDeleteRoom}>Delete</Button>
+          <Button variant="outlined" onClick={handleCloseDeleteDialog}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Snackbar for alerts */}
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleCloseSnackbar}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

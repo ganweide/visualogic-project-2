@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Card,
   Grid,
@@ -569,7 +568,7 @@ const Floor = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Dialog Delete Branch */}
+      {/* Dialog Delete Floor */}
       <Dialog
         fullWidth
         maxWidth          ="md"
