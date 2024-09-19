@@ -1,7 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Box,
   Button,
@@ -10,11 +9,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   FormControl,
   InputLabel,
@@ -22,36 +16,35 @@ import {
   MenuItem,
   Grid,
   Typography,
-  FormGroup,
   FormControlLabel,
   Checkbox,
   Divider,
   Switch,
-  ListItem,
-  ListItemText,
-  Menu,
-  List,
   IconButton,
-  TablePagination,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
+
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
-import Styles from "./style";
-const useStyles = makeStyles(Styles);
 const bannerURL = "http://localhost:5000/api/banner"
 
 const Banner = () => {
-  const classes = useStyles();
-  const tableHead = ["Name", "Effective Date", "End Date", "View", "Order", "Status", ""];
   const [bannerDatabase, setBannerDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
 
-  // Filtering Bar
-  const [name, setName]  = useState("");
-  const [status, setStatus] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
+  const [filters, setFilters] = useState({
+    bannerImageDataUrl: { value: null, matchMode: 'contains' },
+    roomOrder: { value: null, matchMode: 'equals' },
+    roomStatus: { value: null, matchMode: 'equals' },
+  });
 
   // Add New Banner Dialog Constants
   const [dialogImage, setDialogImage] = useState("");
@@ -72,17 +65,57 @@ const Banner = () => {
     }
   }, [refreshTable]);
 
-  // Paginations
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-
-  const handleChangePage = (e, newPage) => {
-    setPage(newPage);
+  // Datatable Templates
+  const statusBodyTemplate = (rowData) => {
+    return rowData.bannerStatus ? 'Active' : 'Inactive';
   };
 
-  const handleChangeRowsPerPage = (e) => {
-    setRowsPerPage(parseInt(e.target.value, 10));
-    setPage(0);
+  const statusFilterTemplate = (options) => {
+    return (
+      <Dropdown 
+        value={filters.bannerStatus.value}
+        options={[
+          { label: 'Active', value: true },
+          { label: 'Inactive', value: false },
+        ]} 
+        onChange={(e) => {
+          setFilters(prevFilters => ({
+            ...prevFilters,
+            bannerStatus: { value: e.value, matchMode: 'equals' }
+          }));
+        }} 
+        placeholder="Select Banner"
+      />
+    );
+  };
+
+  const actionBodyTemplate = (rowData) => {
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={6} md={6}>
+          <IconButton color="success" onClick={() => handleOpenEditDialog(rowData)}>
+            <EditIcon />
+          </IconButton>
+        </Grid>
+        <Grid item xs={6} md={6}>
+          <IconButton color="error" onClick={() => handleOpenDeleteDialog(rowData)}>
+            <DeleteIcon />
+          </IconButton>
+        </Grid>
+      </Grid>
+    );
+  };
+
+  // Alert Box
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   // Dialog Actions
@@ -92,18 +125,24 @@ const Banner = () => {
   }
 
   const handleCloseAddNewBannerDialog = () => {
+    setDialogImage("");
+    setDialogAlwaysCheckbox(false);
+    setDialogDisplayStartDate("");
+    setDialogDisplayEndDate("");
+    setDialogSortOrder("");
+    setDialogActiveSwitch(true);
     setAddNewBannerDialogOpen(false);
   }
 
   const handleSaveNewBanner = async () => {
     try {
       const data = {
-        image: dialogImage,
-        alwaysCheckbox: dialogAlwaysCheckbox,
-        displayStartDate: dialogDisplayStartDate,
-        displayEndDate: dialogDisplayEndDate,
-        order: dialogSortOrder,
-        activeSwitch: dialogActiveSwitch,
+        bannerImageUrl: dialogImage,
+        alwaysStatus: dialogAlwaysCheckbox,
+        startDate: dialogDisplayStartDate,
+        endDate: dialogDisplayEndDate,
+        bannerOrder: dialogSortOrder,
+        bannerStatus: dialogActiveSwitch,
       };
 
       const response = await axios.post(bannerURL, data, {
@@ -112,27 +151,35 @@ const Banner = () => {
         },
       });
 
-      const newBanner = response.data;
-      alert('Banner created successfully!');
-      console.log('New Banner added:', newBanner);
+      console.log('New banner added: ',response.data);
       setRefreshTable(response.data);
+      setSnackbarMessage('Banner saved successfully');
+      setSnackbarSeverity('success');
+      setSnackbarOpen(true);
       handleCloseAddNewBannerDialog();
     } catch (error) {
-      alert('Failed to save Banner');
-      console.error('Error:', error);
+      console.error('Error: ', error);
+      setSnackbarMessage('Error saving banner');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
     }
   }
 
   // Image Dropzone
-  const onDrop = useCallback((acceptedFiles) => {
-    const image = acceptedFiles[0];
-    setDialogImage(URL.createObjectURL(image));
-  }, []);
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: 'image/*',
+    accept: "image/*",
+    onDrop: (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setDialogPicture(reader.result);
+      };
+      reader.readAsDataURL(file);
+    },
   });
+
+  const dropzoneProps = getRootProps();
+  const inputProps = getInputProps();
 
   // Switch Actions
   const handleClickSwitchActiveInactive = (e) => {
@@ -214,49 +261,56 @@ const Banner = () => {
           </Grid>
           {/* Table */}
           <Grid item xs={12} md={12}>
-            <Table>
-              <TableHead>
-                <TableRow className={classes.tableHeadRow}>
-                  {tableHead.map((prop) => (
-                    <TableCell
-                      className ={classes.tableCell + classes.tableHeadCell}
-                      key       ={prop}
-                      style     ={{
-                        textAlign: "left",
-                      }}
-                    >
-                      {prop}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {bannerDatabase.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell style={{textAlign: "left"}}>{row.image}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.displayStartDate}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.displayEndDate}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>View Image</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.order}</TableCell>
-                    <TableCell style={{textAlign: "left"}}>{row.activeSwitch ? "Active" : "Inactive"}</TableCell>
-                    <TableCell style={{textAlign: "center"}}>
-                      <IconButton>
-                        <EditIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={bannerDatabase.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
+            <DataTable 
+              value={bannerDatabase} 
+              paginator 
+              rows={10} 
+              dataKey="id" 
+              filters={filters} 
+              filterDisplay="row" 
+              loading={bannerDatabase.length === 0}
+              emptyMessage="No banner found."
+            >
+              <Column
+                field="branchName"
+                header="Branch"
+                filter
+                filterPlaceholder="Filter by Branch"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="startDate"
+                header="Effective Date"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="endDate"
+                header="End Date"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="bannerImageUrl"
+                header="View"
+                style={{ minWidth: '12rem' }}
+              />
+              <Column
+                field="bannerOrder"
+                header="Order"
+                filter
+                filterPlaceholder="Filter by Order"
+                style={{ minWidth: '12rem' }}
+                sortable
+              />
+              <Column
+                field="roomStatus"
+                header="Status"
+                body={statusBodyTemplate}
+                filter
+                filterElement={statusFilterTemplate}
+                style={{ minWidth: '12rem' }}
+              />
+              <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '8rem' }} />
+            </DataTable>
           </Grid>
         </Grid>
       </Card>
@@ -280,7 +334,7 @@ const Banner = () => {
                 </Grid>
                 <Grid item xs={12} md={12}>
                   <Box
-                    {...getRootProps()}
+                    {...dropzoneProps}
                     sx={{
                       border: '2px dashed #cccccc',
                       borderRadius: '4px',
@@ -290,7 +344,7 @@ const Banner = () => {
                       backgroundColor: isDragActive ? '#eeeeee' : '#fafafa',
                     }}
                   >
-                    <input {...getInputProps()} />
+                    <input {...inputProps} />
                     {dialogImage ? (
                       <img
                         src={dialogImage}
@@ -374,6 +428,30 @@ const Banner = () => {
           <Button onClick={handleSaveNewBanner}>Save</Button>
         </DialogActions>
       </Dialog>
+      {/* Snackbar for alerts */}
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={snackbarOpen}
+        autoHideDuration={5000}
+        onClose={handleCloseSnackbar}
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleCloseSnackbar}
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        }
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

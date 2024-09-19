@@ -11,6 +11,8 @@ const roomSchema = new mongoose.Schema({
   roomOrder: { type: Number, default: 1 },
   roomStatus: { type: Boolean, required: true },
   createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  deletedAt: { type: Date, default: null },
 });
 
 roomSchema.pre('save', function(next) {
