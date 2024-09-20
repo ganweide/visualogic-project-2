@@ -17,6 +17,7 @@ import {
   Typography,
   FormGroup,
   FormControlLabel,
+  FormHelperText,
   Checkbox,
   Divider,
   Switch,
@@ -74,6 +75,7 @@ const Role2 = () => {
   const [roleName, setRoleName] = useState("");
   const [allBranch, setAllBranch] = useState(false);
   const [branch, setBranch] = useState("");
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     roleName: { value: null, matchMode: 'contains' },
@@ -165,6 +167,24 @@ const Role2 = () => {
         });
         return transformed;
       };
+
+      let isValid = true;
+      let validationErrors = {};
+
+      // Validation logic
+      if (!roleName) {
+        validationErrors.roleName = 'Role Name is required';
+        isValid = false;
+      }
+      if (!allBranch && !branch) {
+        validationErrors.branch = 'Branch is required if All Branch is not checked';
+        isValid = false;
+      }
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
   
       const roleData = {
         roleName: roleName,
@@ -178,6 +198,7 @@ const Role2 = () => {
 
       const response = await axios.post(roleURL, roleData);
       console.log('Role saved:', response.data);
+      setErrors({});
       setRefreshTable(response.data);
       setSnackbarMessage('Role saved successfully');
       setSnackbarSeverity('success');
@@ -276,6 +297,24 @@ const Role2 = () => {
         return transformed;
       };
 
+      let isValid = true;
+      let validationErrors = {};
+
+      // Validation logic
+      if (!roleName) {
+        validationErrors.roleName = 'Role Name is required';
+        isValid = false;
+      }
+      if (!allBranch && !branch) {
+        validationErrors.branch = 'Branch is required if All Branch is not checked';
+        isValid = false;
+      }
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedRoleData = {
         roleName: roleName,
         allBranchStatus: allBranch,
@@ -287,6 +326,7 @@ const Role2 = () => {
       
       if (response.status === 200) {
         console.log('Role updated successfully');
+        setErrors({});
         setRefreshTable(prev => !prev);
         setSnackbarMessage('Edited role saved successfully');
         setSnackbarSeverity('success');
@@ -461,6 +501,8 @@ const Role2 = () => {
                 fullWidth
                 variant="outlined"
                 value={roleName}
+                error={!!errors.roleName}
+                helperText={<Typography color="error">{errors.roleName}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -485,6 +527,9 @@ const Role2 = () => {
                       ))
                     }
                   </Select>
+                  {errors.branch && (
+                    <FormHelperText error><Typography color="error">{errors.branch}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
               )
@@ -546,6 +591,8 @@ const Role2 = () => {
                 fullWidth
                 variant="outlined"
                 value={roleName}
+                error={!!errors.roleName}
+                helperText={<Typography color="error">{errors.roleName}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -570,6 +617,9 @@ const Role2 = () => {
                       ))
                     }
                   </Select>
+                  {errors.branch && (
+                    <FormHelperText error><Typography color="error">{errors.branch}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
               )
