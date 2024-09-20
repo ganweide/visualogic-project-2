@@ -494,7 +494,6 @@ const Staff = () => {
         fullWidth
         maxWidth          ="md"
         open              ={addNewStaffDialogOpen}
-        onClose           ={handleCloseAddNewStaffDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
@@ -860,7 +859,8 @@ const Staff = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveNewStaff}>Save</Button>
+          <Button onClick={handleSaveNewStaff} variant="contained">Save</Button>
+          <Button onClick={handleCloseAddNewStaffDialog} color="error" variant="outlined">Cancel</Button>
         </DialogActions>
       </Dialog>
       {/* Dialog Edit Staff */}
