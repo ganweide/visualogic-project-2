@@ -392,7 +392,6 @@ const Room = () => {
         fullWidth
         maxWidth="md"
         open={openAddNewRoom}
-        onClose={handleCloseAddNewRoom}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
@@ -521,11 +520,11 @@ const Room = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddNewRoom} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveNewRoom} color="primary">
+          <Button onClick={handleSaveNewRoom} color="primary" variant="contained">
             Save
+          </Button>
+          <Button onClick={handleCloseAddNewRoom} color="secondary" variant="outlined">
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>
@@ -662,11 +661,11 @@ const Room = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveEditRoom} color="primary">
+          <Button onClick={handleSaveEditRoom} color="primary" variant="contained">
             Save
+          </Button>
+          <Button onClick={handleCloseEditDialog} color="secondary" variant="outlined">
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>
