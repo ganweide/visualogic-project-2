@@ -20,6 +20,7 @@ import {
   Switch,
   Snackbar,
   Alert,
+  FormHelperText,
 } from "@mui/material";
 
 import { DataTable } from 'primereact/datatable';
@@ -39,6 +40,7 @@ const Floor = () => {
   const [floorDatabase, setFloorDatabase] = useState([]);
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   // Add New Floor Dialog Contants
   const [dialogFloorNumber, setDialogFloorNumber] = useState("");
@@ -130,6 +132,31 @@ const Floor = () => {
     setSnackbarOpen(false);
   };
 
+  // Data Validation
+  const validateFloorFields = (fields) => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogFloorNumber) {
+      validationErrors.dialogFloorNumber = 'Floor Number is required';
+      isValid = false;
+    }
+    if (!dialogBranch) {
+      validationErrors.dialogBranch = 'Branch is required';
+      isValid = false;
+    }
+    if (!dialogFloorDetail) {
+      validationErrors.dialogFloorDetail = 'Floor Detail is required';
+      isValid = false;
+    }
+    if (!dialogOrder) {
+      validationErrors.dialogOrder = 'Order is required';
+      isValid = false;
+    }
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [addNewFloorDialogOpen, setAddNewFloorDialogOpen] = useState(false);
   const handleOpenAddNewFloorDialog = () => {
@@ -137,6 +164,7 @@ const Floor = () => {
   };
 
   const handleCloseAddNewFloorDialog = () => {
+    setErrors({});
     setDialogFloorNumber("");
     setDialogBranch("")
     setDialogFloorDetail("")
@@ -148,6 +176,20 @@ const Floor = () => {
 
   const handleSaveNewFloor = async () => {
     try {
+      const fields = {
+        dialogFloorNumber,
+        dialogBranch,
+        dialogFloorDetail,
+        dialogOrder,
+      };
+
+      const { isValid, validationErrors } = validateFloorFields(fields);
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const data = {
         floorNo: dialogFloorNumber,
         branchName: dialogBranch,
@@ -164,6 +206,7 @@ const Floor = () => {
       });
 
       console.log('New floor added: ',response.data);
+      setErrors({});
       setRefreshTable(response.data);
       setSnackbarMessage('Floor saved successfully');
       setSnackbarSeverity('success');
@@ -191,6 +234,8 @@ const Floor = () => {
   }
 
   const handleCloseEditDialog = () => {
+    setErrors({});
+    setEditingFloorId(null);
     setEditDialogOpen(false);
     setDialogFloorNumber("");
     setDialogBranch("")
@@ -202,6 +247,20 @@ const Floor = () => {
 
   const handleSaveEditFloor = async () => {
     try {
+      const fields = {
+        dialogFloorNumber,
+        dialogBranch,
+        dialogFloorDetail,
+        dialogOrder,
+      };
+
+      const { isValid, errors } = validateFloorFields(fields);
+
+      if (!isValid) {
+        setErrors(errors);
+        return;
+      }
+
       const updatedFloorData = {
         floorNo: dialogFloorNumber,
         branchName: dialogBranch,
@@ -305,7 +364,6 @@ const Floor = () => {
                 Add Floor
               </Button>
             </Box>
-            {/* Floor Filters */}
           </Grid>
           {/* Floor Table */}
           <Grid item xs={12} md={12}>
@@ -366,7 +424,6 @@ const Floor = () => {
         fullWidth
         maxWidth          ="md"
         open={addNewFloorDialogOpen}
-        onClose={handleCloseAddNewFloorDialog}
       >
         <DialogTitle>
           <Typography>Add New Floor</Typography>
@@ -381,10 +438,12 @@ const Floor = () => {
                 value={dialogFloorNumber}
                 onChange={(e) => setDialogFloorNumber(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogFloorNumber}
+                helperText={<Typography color="error">{errors.dialogFloorNumber}</Typography>}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense"  error={!!errors.dialogBranch}>
                 <InputLabel>Branch</InputLabel>
                 <Select
                   value={dialogBranch}
@@ -397,6 +456,9 @@ const Floor = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.branch && (
+                  <FormHelperText error><Typography color="error">{errors.branch}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={12}>
@@ -407,6 +469,8 @@ const Floor = () => {
                 value={dialogFloorDetail}
                 onChange={(e) => setDialogFloorDetail(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogFloorDetail}
+                helperText={<Typography color="error">{errors.dialogFloorDetail}</Typography>}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
@@ -443,6 +507,8 @@ const Floor = () => {
                 value={dialogOrder}
                 onChange={(e) => setDialogOrder(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogOrder}
+                helperText={<Typography color="error">{errors.dialogOrder}</Typography>}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
@@ -457,18 +523,18 @@ const Floor = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseAddNewFloorDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveNewFloor} color="primary">
+          <Button onClick={handleSaveNewFloor} color="primary" variant="contained">
             Save
+          </Button>
+          <Button onClick={handleCloseAddNewFloorDialog} color="secondary" variant="outlined">
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>
       {/* Dialog Edit Floor */}
       <Dialog
         fullWidth
-        maxWidth          ="md"
+        maxWidth ="md"
         open={editDialogOpen}
       >
         <DialogTitle>
@@ -560,11 +626,11 @@ const Floor = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEditDialog} color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleSaveEditFloor} color="primary">
+          <Button onClick={handleSaveEditFloor} color="primary" variant="contained">
             Save
+          </Button>
+          <Button onClick={handleCloseEditDialog} color="secondary" variant="outlined">
+            Cancel
           </Button>
         </DialogActions>
       </Dialog>
