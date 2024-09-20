@@ -363,7 +363,6 @@ const Banner = () => {
         fullWidth
         maxWidth          ="md"
         open              ={addNewBannerDialogOpen}
-        onClose           ={handleCloseAddNewBannerDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
@@ -470,7 +469,8 @@ const Banner = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveNewBanner}>Save</Button>
+          <Button onClick={handleSaveNewBanner} variant="contained">Save</Button>
+          <Button onClick={handleCloseAddNewBannerDialog} color="error" variant="outlined">Cancel</Button>
         </DialogActions>
       </Dialog>
       {/* Dialog Edit Banner */}
