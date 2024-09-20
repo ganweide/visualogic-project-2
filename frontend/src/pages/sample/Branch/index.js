@@ -459,7 +459,6 @@ const Branch = () => {
         fullWidth
         maxWidth          ="md"
         open              ={addNewBranchDialogOpen}
-        onClose           ={handleCloseAddNewBranchDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
@@ -768,7 +767,8 @@ const Branch = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleSaveNewBranch}>Save</Button>
+          <Button onClick={handleSaveNewBranch} variant="contained">Save</Button>
+          <Button onClick={handleCloseAddNewBranchDialog} color="error" variant="outlined">Cancel</Button>
         </DialogActions>
       </Dialog>
       {/* Dialog Edit Branch */}
