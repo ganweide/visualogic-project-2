@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
   Box,
@@ -10,10 +10,6 @@ import {
   DialogContent,
   DialogTitle,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Grid,
   Typography,
   FormControlLabel,
@@ -590,6 +586,25 @@ const Banner = () => {
         <DialogActions>
           <Button onClick={handleSaveEditBanner} variant="contained">Save</Button>
           <Button onClick={handleCloseEditDialog} color="error" variant="outlined">Cancel</Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog Delete Branch */}
+      <Dialog
+        fullWidth
+        maxWidth          ="md"
+        open              ={deleteDialogOpen}
+        aria-labelledby   ="alert-dialog-title"
+        aria-describedby  ="alert-dialog-description"
+      >
+        <DialogTitle>
+          <Typography>Confirm Deletion</Typography>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography>Are you sure you want to delete the banner: {deletingBanner?.bannerImageDataUrl}?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button color="error" variant="contained" onClick={handleDeleteBanner}>Delete</Button>
+          <Button variant="outlined" onClick={handleCloseDeleteDialog}>Cancel</Button>
         </DialogActions>
       </Dialog>
       {/* Snackbar for alerts */}
