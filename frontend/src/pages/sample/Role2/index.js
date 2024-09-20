@@ -35,7 +35,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
-const roleURL = "http://localhost:5000/api/role"
+const roleURL = "http://localhost:5000/api/role";
+const branchURL = "http://localhost:5000/api/branches";
 
 const PermissionSection = ({ title, permissions, state, setState }) => {
   const handleChange = (permission) => (e) => {
@@ -71,11 +72,13 @@ const PermissionSection = ({ title, permissions, state, setState }) => {
 
 const Role2 = () => {
   const [roleDatabase, setRoleDatabase] = useState([]);
+  const [branchDatabase, setBranchDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
-  const [roleName, setRoleName] = useState("");
-  const [allBranch, setAllBranch] = useState(false);
-  const [branch, setBranch] = useState("");
   const [errors, setErrors] = useState({});
+
+  const [dialogRoleName, setDialogRoleName] = useState("");
+  const [dialogAllBranchCheckbox, setDialogAllBranchCheckbox] = useState(false);
+  const [dialogBranch, setDialogBranch] = useState("");
 
   const [filters, setFilters] = useState({
     roleName: { value: null, matchMode: 'contains' },
@@ -84,13 +87,23 @@ const Role2 = () => {
 
   // Retrieve Data
   useEffect(() => {
-    try {
-      axios.get(roleURL).then((response) => {
-        setRoleDatabase(response.data);
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    const fetchData = async () => {
+      try {
+        const [roleResponse, branchResponse] = await Promise.all([
+          axios.get(roleURL),
+          axios.get(branchURL)
+        ])
+        setBranchDatabase(branchResponse.data)
+        const transformedRoleData = roleResponse.data.map(role => ({
+          ...role,
+          branchName: branchResponse.data.find(branch => branch._id === role.branchName)?.branchName || 'Unknown Branch'
+        }));
+        setRoleDatabase(transformedRoleData);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
   }, [refreshTable]);
 
   // Role Checkboxes Generation
@@ -136,6 +149,24 @@ const Role2 = () => {
     setSnackbarOpen(false);
   };
 
+  // Data Validation
+  const validateRoleFields = (fields) => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogRoleName) {
+      validationErrors.dialogRoleName = 'Role Name is required';
+      isValid = false;
+    }
+    if (!dialogAllBranchCheckbox && !dialogBranch) {
+      validationErrors.dialogBranch = 'Branch is required if All Branch is not checked';
+      isValid = false;
+    }
+
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [addNewRoleDialogOpen, setAddNewRoleDialogOpen] = useState(false);
   const handleOpenAddNewRoleDialog = () => {
@@ -144,10 +175,11 @@ const Role2 = () => {
 
   const handleCloseAddNewRoleDialog = () => {
     setAddNewRoleDialogOpen(false);
+    setErrors({});
     setPermissions(initialPermissionsState);
-    setRoleName("");
-    setAllBranch(false);
-    setBranch("");
+    setDialogRoleName("");
+    setDialogAllBranchCheckbox(false);
+    setDialogBranch("");
   }
 
   const handleSaveNewRole = async () => {
@@ -168,18 +200,13 @@ const Role2 = () => {
         return transformed;
       };
 
-      let isValid = true;
-      let validationErrors = {};
+      const fields = {
+        dialogRoleName,
+        dialogAllBranchCheckbox,
+        dialogBranch,
+      };
 
-      // Validation logic
-      if (!roleName) {
-        validationErrors.roleName = 'Role Name is required';
-        isValid = false;
-      }
-      if (!allBranch && !branch) {
-        validationErrors.branch = 'Branch is required if All Branch is not checked';
-        isValid = false;
-      }
+      const { isValid, validationErrors } = validateRoleFields(fields);
 
       if (!isValid) {
         setErrors(validationErrors);
@@ -187,9 +214,9 @@ const Role2 = () => {
       }
   
       const roleData = {
-        roleName: roleName,
-        allBranchStatus: allBranch,
-        branchName: branch ? branch : null,
+        roleName: dialogRoleName,
+        allBranchStatus: dialogAllBranchCheckbox,
+        branchName: dialogAllBranchCheckbox ? null : dialogBranch,
         roleStatus: permissions.ActiveInactive,
         ...transformPermissions(permissions),
       };
@@ -198,7 +225,6 @@ const Role2 = () => {
 
       const response = await axios.post(roleURL, roleData);
       console.log('Role saved:', response.data);
-      setErrors({});
       setRefreshTable(response.data);
       setSnackbarMessage('Role saved successfully');
       setSnackbarSeverity('success');
@@ -216,9 +242,9 @@ const Role2 = () => {
   const [editingRoleId, setEditingRoleId] = useState(null);
   const handleOpenEditDialog = (rowData) => {
     setEditingRoleId(rowData._id);
-    setRoleName(rowData.roleName);
-    setAllBranch(rowData.allBranchStatus);
-    setBranch(rowData.branchName);
+    setDialogRoleName(rowData.roleName);
+    setDialogAllBranchCheckbox(rowData.allBranchStatus);
+    setDialogBranch(!rowData.allBranchStatus && branchDatabase.find(branch => branch.branchName === rowData.branchName)._id);
     setPermissions({
       "admin-RoleView": rowData.adminRoleView,
       "admin-RoleCreate": rowData.adminRoleCreate,
@@ -272,11 +298,12 @@ const Role2 = () => {
 
   const handleCloseEditDialog = () => {
     setEditDialogOpen(false);
+    setErrors({});
     setEditingRoleId(null);
     setPermissions(initialPermissionsState);
-    setRoleName("");
-    setAllBranch(false);
-    setBranch("");
+    setDialogRoleName("");
+    setDialogAllBranchCheckbox(false);
+    setDialogBranch("");
   }
 
   const handleSaveEditRole = async () => {
@@ -297,18 +324,13 @@ const Role2 = () => {
         return transformed;
       };
 
-      let isValid = true;
-      let validationErrors = {};
+      const fields = {
+        dialogRoleName,
+        dialogAllBranchCheckbox,
+        dialogBranch,
+      };
 
-      // Validation logic
-      if (!roleName) {
-        validationErrors.roleName = 'Role Name is required';
-        isValid = false;
-      }
-      if (!allBranch && !branch) {
-        validationErrors.branch = 'Branch is required if All Branch is not checked';
-        isValid = false;
-      }
+      const { isValid, validationErrors } = validateRoleFields(fields);
 
       if (!isValid) {
         setErrors(validationErrors);
@@ -316,9 +338,10 @@ const Role2 = () => {
       }
 
       const updatedRoleData = {
-        roleName: roleName,
-        allBranchStatus: allBranch,
-        branchName: branch,
+        roleName: dialogRoleName,
+        allBranchStatus: dialogAllBranchCheckbox,
+        branchName: dialogAllBranchCheckbox ? null : dialogBranch,
+        roleStatus: permissions.ActiveInactive,
         ...transformPermissions(permissions),
       };
   
@@ -326,7 +349,6 @@ const Role2 = () => {
       
       if (response.status === 200) {
         console.log('Role updated successfully');
-        setErrors({});
         setRefreshTable(prev => !prev);
         setSnackbarMessage('Edited role saved successfully');
         setSnackbarSeverity('success');
@@ -375,7 +397,7 @@ const Role2 = () => {
 
   // Checkbox Actions
   const handleClickCheckboxAllBranch = (e) => {
-    setAllBranch(e.target.checked);
+    setDialogAllBranchCheckbox(e.target.checked);
   }
 
   // Switch Actions
@@ -494,41 +516,43 @@ const Role2 = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
               <TextField
-                onChange={(e) => setRoleName(e.target.value)}
+                onChange={(e) => setDialogRoleName(e.target.value)}
                 margin="dense"
                 label="Role Name"
                 type="text"
                 fullWidth
                 variant="outlined"
-                value={roleName}
-                error={!!errors.roleName}
-                helperText={<Typography color="error">{errors.roleName}</Typography>}
+                value={dialogRoleName}
+                error={!!errors.dialogRoleName}
+                helperText={<Typography color="error">{errors.dialogRoleName}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
               <FormGroup>
-                <FormControlLabel control={<Checkbox checked={allBranch} onChange={handleClickCheckboxAllBranch} />} label='All Branch' />
+                <FormControlLabel control={<Checkbox checked={dialogAllBranchCheckbox} onChange={handleClickCheckboxAllBranch} />} label='All Branch' />
               </FormGroup>
             </Grid>
-            {!allBranch && (
+            {!dialogAllBranchCheckbox && (
               <Grid item xs={12} md={12}>
-                <FormControl fullWidth margin="dense">
+                <FormControl fullWidth margin="dense" error={!!errors.dialogBranch}>
                   <InputLabel id="branch-select">Branch</InputLabel>
                   <Select
                     labelId ="branch-select"
                     id      ="branch-select"
-                    value   ={branch}
+                    value   ={dialogBranch}
                     label   ="Branch"
-                    onChange={(e) => {setBranch(e.target.value)}}
+                    onChange={(e) => {setDialogBranch(e.target.value)}}
                   >
-                    {
-                      roleDatabase.map((row, index) => (
-                        <MenuItem key={index} value={row.branch}>{row.branch}</MenuItem>
+                    {branchDatabase.length > 0 ? (
+                      branchDatabase.map((row) => (
+                        <MenuItem key={row._id} value={row._id}>{row.branchName}</MenuItem>
                       ))
-                    }
+                    ) : (
+                      <MenuItem value="" disabled>No branches set up yet</MenuItem>
+                    )}
                   </Select>
-                  {errors.branch && (
-                    <FormHelperText error><Typography color="error">{errors.branch}</Typography></FormHelperText>
+                  {errors.dialogBranch && (
+                    <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
                   )}
                 </FormControl>
               </Grid>
@@ -584,41 +608,43 @@ const Role2 = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} md={12}>
               <TextField
-                onChange={(e) => setRoleName(e.target.value)}
+                onChange={(e) => setDialogRoleName(e.target.value)}
                 margin="dense"
                 label="Role Name"
                 type="text"
                 fullWidth
                 variant="outlined"
-                value={roleName}
-                error={!!errors.roleName}
-                helperText={<Typography color="error">{errors.roleName}</Typography>}
+                value={dialogRoleName}
+                error={!!errors.dialogRoleName}
+                helperText={<Typography color="error">{errors.dialogRoleName}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
               <FormGroup>
-                <FormControlLabel control={<Checkbox checked={allBranch} onChange={handleClickCheckboxAllBranch} />} label='All Branch' />
+                <FormControlLabel control={<Checkbox checked={dialogAllBranchCheckbox} onChange={handleClickCheckboxAllBranch} />} label='All Branch' />
               </FormGroup>
             </Grid>
-            {!allBranch && (
+            {!dialogAllBranchCheckbox && (
               <Grid item xs={12} md={12}>
                 <FormControl fullWidth margin="dense">
                   <InputLabel id="branch-select">Branch</InputLabel>
                   <Select
                     labelId ="branch-select"
                     id      ="branch-select"
-                    value   ={branch}
+                    value   ={dialogBranch}
                     label   ="Branch"
-                    onChange={(e) => {setBranch(e.target.value)}}
+                    onChange={(e) => {setDialogBranch(e.target.value)}}
                   >
-                    {
-                      roleDatabase.map((row, index) => (
-                        <MenuItem key={index} value={row.branch}>{row.branch}</MenuItem>
+                    {branchDatabase.length > 0 ? (
+                      branchDatabase.map((row) => (
+                        <MenuItem key={row._id} value={row._id}>{row.branchName}</MenuItem>
                       ))
-                    }
+                    ) : (
+                      <MenuItem value="" disabled>No branches set up yet</MenuItem>
+                    )}
                   </Select>
-                  {errors.branch && (
-                    <FormHelperText error><Typography color="error">{errors.branch}</Typography></FormHelperText>
+                  {errors.dialogBranch && (
+                    <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
                   )}
                 </FormControl>
               </Grid>

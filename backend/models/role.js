@@ -47,7 +47,7 @@ const roleSchema = new mongoose.Schema({
   financeAttendanceCreate: { type: Boolean, default: false },
   financeAttendanceUpdate: { type: Boolean, default: false },
   roleName: { type: String, required: true, unique: true },
-  branchName: [{ type: mongoose.Schema.Types.ObjectId, ref: 'branch' }],
+  branchName: { type: mongoose.Schema.Types.ObjectId, ref: 'branch' },
   allBranchStatus: { type: Boolean, required: true },
   roleStatus: { type: Boolean, required: true },
   createdAt: { type: Date, default: Date.now },
