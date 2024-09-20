@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 
 const bannerSchema = new mongoose.Schema({
   bannerImageUrl: { type: String, required: true },
-  banneImageDataUrl: { type: String, required: true },
-  startDate: { type: Date },
-  endDate: { type: Date },
+  bannerImageDataUrl: { type: String, required: true },
+  startDate: { type: String },
+  endDate: { type: String },
   bannerStatus: { type: Boolean, required: true },
-  allwaysStatus: { type: Boolean, required: true },
+  alwaysStatus: { type: Boolean, required: true },
   bannerOrder: { type: Number, default: 1 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
