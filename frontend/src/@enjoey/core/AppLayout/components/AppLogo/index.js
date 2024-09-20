@@ -1,7 +1,7 @@
 import React from 'react';
 import {useThemeContext} from '../../../../utility/AppContextProvider/ThemeContextProvider';
 import {Box, alpha} from '@mui/material';
-// import {ReactComponent as Logo} from '../../../../../assets/icon/ptc-logo.png';
+import {ReactComponent as Logo} from '../../../../../assets/icon/anran-circle-logo.png';
 // import {ReactComponent as LogoText} from '../../../../../assets/icon/En-Joey-Logo_text.svg';
 
 const AppLogo = () => {

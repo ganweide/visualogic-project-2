@@ -15,7 +15,7 @@ import { Color } from '@tiptap/extension-color'
 import { EditorProvider, useCurrentEditor } from '@tiptap/react'
 
 // React Imports
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 // Remix Icons Imports
 import { 
@@ -110,7 +110,7 @@ function a11yProps(index) {
   };
 }
 
-const TipTapEditor = ({ message }) => {
+const TipTapEditor = ({ message = () => {}, initialContent = "" }) => {
   const [html, setHtml]                                   = useState("");
   const [json, setJson]                                   = useState("");
   const [openPreviewDialog, setOpenPreviewDialog]         = useState(false);
@@ -123,7 +123,6 @@ const TipTapEditor = ({ message }) => {
   const [alt, setAlt]                                     = useState("");
   const [isDarkMode, setIsDarkMode]                       = useState(false);
   const [editor, setEditor]                               = useState(null);
-  const [contentJson, setContentJson]                     = useState("");
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -188,18 +187,6 @@ const TipTapEditor = ({ message }) => {
     setOpenImageUploadDialog(false);
   }
 
-  const handleOpenPreviewDialog = (editor) => {
-    if (editor) {
-      const editorContent = editor.getJSON(); // Get the JSON content of the editor
-      setContentJson(editorContent); // Set the JSON content in state
-      setOpenPreviewDialog(true); // Open the preview dialog
-    }
-  }
-
-  const handleClosePreviewDialog = () => {
-    setOpenPreviewDialog(false);
-  }
-
   const CustomTableCell = TableCell.extend({
     addAttributes() {
       return {
@@ -227,11 +214,11 @@ const TipTapEditor = ({ message }) => {
     StarterKit.configure({
       bulletList: {
         keepMarks: true,
-        keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
+        keepAttributes: false,
       },
       orderedList: {
         keepMarks: true,
-        keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
+        keepAttributes: false,
       },
     }),
     Table.configure({
@@ -500,19 +487,31 @@ const TipTapEditor = ({ message }) => {
       </div>
     )
   }
+
+  let content;
+  if (initialContent) {
+    try {
+      content = JSON.parse(JSON.stringify(initialContent));
+    } catch (error) {
+      console.error("Failed to stringify initialContentJson:", error);
+      content = '';
+    }
+  } else {
+    content = json ? JSON.parse(json) : '';
+  }
   
   return (
     <div className={`editor${isDarkMode ? ' dark-mode' : ''}`}>
       <EditorProvider
         slotBefore={<MenuBar />}
         extensions={extensions}
-        content={contentJson}
+        content={content}
         onUpdate={({ editor }) => {
-          message(editor.getHTML());
+          const updatedJson = editor.getJSON();
+          setJson(JSON.stringify(updatedJson));
+          message(updatedJson);
         }}
       />
-      <div>{html}</div>
-      <div>{json && JSON.stringify(json)}</div>
       {/* Insert Image Dialog */}
       <Dialog
         fullWidth
@@ -605,33 +604,6 @@ const TipTapEditor = ({ message }) => {
           <Button variant="outlined" onClick={handleCloseImageUploadDialog}>
             <Typography variant="button">
               Cancel
-            </Typography>
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Preview Dialog */}
-      <Dialog
-        fullWidth
-        maxWidth          ="md"
-        open              ={openPreviewDialog}
-        onClose           ={handleClosePreviewDialog}
-        aria-labelledby   ="alert-dialog-title"
-        aria-describedby  ="alert-dialog-description"
-      >
-        <DialogTitle>
-          <Typography variant="h2">Preview</Typography>
-        </DialogTitle>
-        <DialogContent dividers>
-          <EditorProvider
-            extensions={extensions}
-            content={contentJson}
-            editable={false}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClosePreviewDialog} variant="outlined">
-            <Typography variant="button">
-              Done
             </Typography>
           </Button>
         </DialogActions>
