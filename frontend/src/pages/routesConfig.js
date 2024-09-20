@@ -3,6 +3,7 @@ import { IoSettings } from "react-icons/io5";
 import { RiAdvertisementFill } from "react-icons/ri";
 import { MdMessage } from "react-icons/md";
 import { FaUsers } from "react-icons/fa6";
+import { FaHome } from "react-icons/fa";
 import { FiPackage } from "react-icons/fi";
 
 const routesConfig = [
@@ -11,7 +12,7 @@ const routesConfig = [
     title: 'Dashboard',
     messageId: 'Dashboard',
     type: 'item',
-    icon: <BiAlignLeft />,
+    icon: <FaHome />,
     url: '/sample/Dashboard',
   },
   {
