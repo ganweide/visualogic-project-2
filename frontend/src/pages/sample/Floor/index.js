@@ -296,7 +296,7 @@ const Floor = () => {
                 justifyContent: "space-between"
               }}
             >
-              <Typography variant="h1">Floor Management</Typography>
+              <Typography variant="h1">Floor Table</Typography>
               <Button
                 variant="outlined"
                 startIcon={<PersonAddIcon />}
