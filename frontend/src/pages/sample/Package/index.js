@@ -427,7 +427,6 @@ const Package = () => {
         fullWidth
         maxWidth="md"
         open={openAddNewPackage}
-        onClose={handleCloseAddNewPackage}
         aria-labelledby='alert-dialog-title'
         aria-describedby='alert-dialog-description'
       >
