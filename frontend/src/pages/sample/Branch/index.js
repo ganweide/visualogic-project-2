@@ -250,6 +250,7 @@ const Branch = () => {
 
   const handleCloseEditDialog = () => {
     setEditDialogOpen(false);
+    setEditingBranchId(null);
     setDialogAreaName("");
     setDialogBranchName("");
     setDialogBranchCode("");
