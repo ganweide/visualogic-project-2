@@ -417,7 +417,6 @@ const Messages = () => {
         fullWidth
         maxWidth          ="md"
         open              ={addNewMessageDialogOpen}
-        onClose           ={handleCloseAddNewMessageDialog}
         aria-labelledby   ="alert-dialog-title"
         aria-describedby  ="alert-dialog-description"
       >
@@ -551,7 +550,8 @@ const Messages = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCreateNewMessage}>Create</Button>
+          <Button onClick={handleCreateNewMessage} variant="contained">Create</Button>
+          <Button onClick={handleCloseAddNewMessageDialog} color="error" variant="outlined">Cancel</Button>
         </DialogActions>
       </Dialog>
       {/* Dialog Edit Message */}
