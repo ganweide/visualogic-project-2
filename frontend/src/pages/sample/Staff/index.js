@@ -273,7 +273,6 @@ const Staff = () => {
       isValid = false;
     }
 
-    console.log(validationErrors);
     return { isValid, validationErrors };
   }
 
@@ -435,6 +434,7 @@ const Staff = () => {
   const handleSaveEditStaff = async () => {
     try {
       const { isValid, validationErrors } = validateStaffFields();
+      
       if (!isValid) {
         setErrors(validationErrors);
         return;
