@@ -21,6 +21,7 @@ import {
   Divider,
   Snackbar,
   Alert,
+  FormHelperText,
 } from "@mui/material";
 
 import { DataTable } from 'primereact/datatable';
@@ -41,6 +42,7 @@ const Room = () => {
   const [floorDatabase, setFloorDatabase] = useState([]);
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     branchName: { value: null, matchMode: 'contains' },
@@ -139,6 +141,39 @@ const Room = () => {
     setSnackbarOpen(false);
   };
 
+  // Data Validation
+  const validateRoomFields = (fields) => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogFloor) {
+      validationErrors.dialogFloor = 'Floor is required';
+      isValid = false;
+    }
+    if (!dialogBranch) {
+      validationErrors.dialogBranch = 'Branch is required';
+      isValid = false;
+    }
+    if (!dialogRoomNumber) {
+      validationErrors.dialogRoomNumber = 'Room is required';
+      isValid = false;
+    }
+    if (!dialogNumberOfPerson) {
+      validationErrors.dialogNumberOfPerson = 'Room Size is required';
+      isValid = false;
+    }
+    if (!dialogGender) {
+      validationErrors.dialogGender = 'Gender is required';
+      isValid = false;
+    }
+    if (!dialogOrder) {
+      validationErrors.dialogOrder = 'Order is required';
+      isValid = false;
+    }
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [openAddNewRoom, setOpenAddNewRoom] = useState(false);
   const handleOpenAddNewRoom = () => {
@@ -153,27 +188,44 @@ const Room = () => {
     setDialogPicture("");
     setDialogOrder("");
     setDialogActiveSwitch(true);
+    setErrors({});
     setOpenAddNewRoom(false);
   };
 
   const handleSaveNewRoom = async () => {
     try{
-    const data = {
-      roomNo: dialogRoomNumber,
-      floorNo: dialogFloor,
-      branchName: dialogBranch,
-      roomPersonNo: dialogNumberOfPerson,
-      roomGender: dialogGender,
-      roomFloorUrl: dialogPicture,
-      roomOrder: dialogOrder,
-      roomStatus: dialogActiveSwitch,
-    };
+      const fields = {
+        dialogFloor,
+        dialogBranch,
+        dialogRoomNumber,
+        dialogNumberOfPerson,
+        dialogGender,
+        dialogOrder,
+      };
 
-    const response = await axios.post(roomURL, data, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+      const { isValid, validationErrors } = validateRoomFields(fields);
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      const data = {
+        roomNo: dialogRoomNumber,
+        floorNo: dialogFloor,
+        branchName: dialogBranch,
+        roomPersonNo: dialogNumberOfPerson,
+        roomGender: dialogGender,
+        roomFloorUrl: dialogPicture,
+        roomOrder: dialogOrder,
+        roomStatus: dialogActiveSwitch,
+      };
+
+      const response = await axios.post(roomURL, data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       console.log('New room added: ',response.data);
       setRefreshTable(response.data);
@@ -213,11 +265,29 @@ const Room = () => {
     setDialogPicture("");
     setDialogOrder("");
     setDialogActiveSwitch(true);
+    setErrors({});
+    setEditingRoomId(null);
     setEditDialogOpen(false);
   }
 
   const handleSaveEditRoom = async () => {
     try {
+      const fields = {
+        dialogFloor,
+        dialogBranch,
+        dialogRoomNumber,
+        dialogNumberOfPerson,
+        dialogGender,
+        dialogOrder,
+      };
+
+      const { isValid, validationErrors } = validateRoomFields(fields);
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedRoomData = {
         roomNo: dialogRoomNumber,
         floorNo: dialogFloor,
@@ -401,7 +471,7 @@ const Room = () => {
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogBranch}>
                 <InputLabel>Branch</InputLabel>
                 <Select
                   value={dialogBranch}
@@ -414,10 +484,13 @@ const Room = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.dialogBranch && (
+                  <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogFloor}>
                 <InputLabel>Floor</InputLabel>
                 <Select
                   value={dialogFloor}
@@ -430,6 +503,9 @@ const Room = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.dialogFloor && (
+                  <FormHelperText error><Typography color="error">{errors.dialogFloor}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
@@ -440,6 +516,8 @@ const Room = () => {
                 value={dialogRoomNumber}
                 onChange={(e) => setDialogRoomNumber(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogRoomNumber}
+                helperText={<Typography color="error">{errors.dialogRoomNumber}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -450,10 +528,12 @@ const Room = () => {
                 value={dialogNumberOfPerson}
                 onChange={(e) => setDialogNumberOfPerson(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogNumberOfPerson}
+                helperText={<Typography color="error">{errors.dialogNumberOfPerson}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogGender}>
                 <InputLabel>Gender</InputLabel>
                 <Select
                 value={dialogGender}
@@ -464,6 +544,9 @@ const Room = () => {
                   <MenuItem value="Male">Male</MenuItem>
                   <MenuItem value="Female">Female</MenuItem>
                 </Select>
+                {errors.dialogGender && (
+                  <FormHelperText error><Typography color="error">{errors.dialogGender}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
@@ -506,6 +589,8 @@ const Room = () => {
                 value={dialogOrder}
                 onChange={(e) => setDialogOrder(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogOrder}
+                helperText={<Typography color="error">{errors.dialogOrder}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
