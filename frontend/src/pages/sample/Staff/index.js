@@ -23,6 +23,7 @@ import {
   FormGroup,
   Snackbar,
   Alert,
+  FormHelperText,
 } from "@mui/material";
 
 import { DataTable } from 'primereact/datatable';
@@ -43,6 +44,7 @@ const Staff = () => {
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [roleDatabase, setRoleDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     staffName: { value: null, matchMode: 'contains' },
@@ -165,6 +167,116 @@ const Staff = () => {
     setSnackbarOpen(false);
   };
 
+  // Data Validation
+  const validateStaffFields = () => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogStaffCode) {
+      validationErrors.dialogStaffCode = 'Staff Code is required';
+      isValid = false;
+    } else if (dialogStaffCode.length !== 10) {
+      validationErrors.dialogStaffCode = 'Staff Code format is incorrect';
+      isValid = false
+    }
+    if (!dialogName) {
+      validationErrors.dialogName = 'Staff Name is required';
+      isValid = false;
+    }
+    if (!dialogGender) {
+      validationErrors.dialogGender = 'Gender is required';
+      isValid = false;
+    }
+    if (!dialogRole) {
+      validationErrors.dialogRole = 'Role is required';
+      isValid = false;
+    }
+    if (!dialogJoinDate) {
+      validationErrors.dialogJoinDate = 'Joined Date is required';
+      isValid = false;
+    }
+    if (!isAllBranch && !dialogBranchName) {
+      validationErrors.dialogBranchName = 'Branch is required if All Branch is not checked';
+      isValid = false;
+    }
+    if (!dialogUsername) {
+      validationErrors.dialogUsername = 'Username is required';
+      isValid = false;
+    }
+    if (!dialogPassword) {
+      validationErrors.dialogPassword = 'Password is required';
+      isValid = false;
+    }
+    if (!dialogEmail) {
+      validationErrors.dialogEmail = 'Email is required';
+      isValid = false;
+    }
+    if (!dialogPosition) {
+      validationErrors.dialogPosition = 'Position is required';
+      isValid = false;
+    }
+    if (!dialogFullName) {
+      validationErrors.dialogFullName = 'Full Name is required';
+      isValid = false;
+    }
+    if (!dialogNRIC) {
+      validationErrors.dialogNRIC = 'NRIC is required';
+      isValid = false;
+    }
+    if (!dialogReligion) {
+      validationErrors.dialogReligion = 'Religion is required';
+      isValid = false;
+    }
+    if (!dialogMobileNo) {
+      validationErrors.dialogMobileNo = 'Mobile No. is required';
+      isValid = false;
+    }
+    if (!dialogMartialStatus) {
+      validationErrors.dialogMartialStatus = 'Martial Status is required';
+      isValid = false;
+    }
+    if (!dialogCurrentAddress) {
+      validationErrors.dialogCurrentAddress = 'Address is required';
+      isValid = false;
+    }
+    if (!dialogBankName) {
+      validationErrors.dialogBankName = 'Bank is required';
+      isValid = false;
+    }
+    if (!dialogAccountNo) {
+      validationErrors.dialogAccountNo = 'Account No. is required';
+      isValid = false;
+    }
+    if (!dialogEPFONo) {
+      validationErrors.dialogEPFONo = 'EPF No. is required';
+      isValid = false;
+    }
+    if (!dialogSOCSNo) {
+      validationErrors.dialogSOCSNo = 'SOCS No. is required';
+      isValid = false;
+    }
+    if (!dialogIncomeTaxNo) {
+      validationErrors.dialogIncomeTaxNo = 'Income Tax No. is required';
+      isValid = false;
+    }
+    if (!dialogEmergencyContactName) {
+      validationErrors.dialogEmergencyContactName = 'Name is required';
+      isValid = false;
+    }
+    if (!dialogEmergencyRelation) {
+      validationErrors.dialogEmergencyRelation = 'Relation is required';
+      isValid = false;
+    }
+    if (!dialogEmergencyContact) {
+      validationErrors.dialogEmergencyContact = 'Contact No. is required';
+      isValid = false;
+    }
+
+    console.log(validationErrors);
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [addNewStaffDialogOpen, setAddNewStaffDialogOpen] = useState(false);
   const handleOpenAddNewStaffDialog = () => {
@@ -172,43 +284,50 @@ const Staff = () => {
   }
 
   const handleCloseAddNewStaffDialog = () => {
-    setDialogName([]);
-    setDialogStaffCode([]);
+    setDialogName("");
+    setDialogStaffCode("");
     setDialogBranchName("");
-    setDialogGender([]);
+    setDialogGender("");
     setDialogRole("");
-    setDialogJoinDate([]);
-    setDialogUsername([]);
-    setDialogPassword([]);
-    setDialogEmail([]);
-    setDialogPosition([]);
-    setDialogFullName([]);
-    setDialogNRIC([]);
-    setDialogReligion([]);
-    setDialogMobileNo([]);
-    setDialogMartialStatus([]);
-    setDialogCurrentAddress([]);
-    setDialogBankName([]);
-    setDialogAccountNo([]);
-    setDialogEPFONo([]);
-    setDialogSOCSNo([]);
-    setDialogIncomeTaxNo([]);
-    setDialogEmergencyContactName([]);
-    setDialogEmergencyRelation([]);
-    setDialogEmergencyContact([]);
+    setDialogJoinDate("");
+    setDialogUsername("");
+    setDialogPassword("");
+    setDialogEmail("");
+    setDialogPosition("");
+    setDialogFullName("");
+    setDialogNRIC("");
+    setDialogReligion("");
+    setDialogMobileNo("");
+    setDialogMartialStatus("");
+    setDialogCurrentAddress("");
+    setDialogBankName("");
+    setDialogAccountNo("");
+    setDialogEPFONo("");
+    setDialogSOCSNo("");
+    setDialogIncomeTaxNo("");
+    setDialogEmergencyContactName("");
+    setDialogEmergencyRelation("");
+    setDialogEmergencyContact("");
+    setErrors({});
     setDialogActiveSwitch(true);
     setIsAllBranch(false);
     setAddNewStaffDialogOpen(false);
   }
 
   const handleSaveNewStaff = async () => {
-    console.log("dialogRole", dialogRole);
     try {
+      const { isValid, validationErrors } = validateStaffFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const data = {
         staffName: dialogName,
         staffCode: dialogStaffCode,
         allBranchStatus: isAllBranch,
-        branchName: dialogBranchName ? dialogBranchName : null,
+        branchName: isAllBranch ? dialogBranchName : null,
         staffGender: dialogGender,
         roleName: dialogRole ? dialogRole : null,
         staffJoinDate: dialogJoinDate,
@@ -310,10 +429,17 @@ const Staff = () => {
     setDialogEmergencyContact("")
     setDialogActiveSwitch(true);
     setIsAllBranch(false);
+    setErrors({});
   }
 
   const handleSaveEditStaff = async () => {
     try {
+      const { isValid, validationErrors } = validateStaffFields();
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedStaffData = {
         staffName: dialogName,
         staffCode: dialogStaffCode,
@@ -508,12 +634,21 @@ const Staff = () => {
             <Grid item xs={6} md={6}>
               <TextField
                 onChange={(e) => setDialogStaffCode(e.target.value)}
+                onBlur={() => {
+                  const error = dialogStaffCode.length !== 10 ? 'Staff Code must be exactly 10 characters' : null;
+                  setErrors((prev) => ({
+                    ...prev,
+                    dialogStaffCode: error,
+                  }));
+                }}
                 margin="dense"
                 label="Staff Code"
                 type="text"
                 fullWidth
                 variant="outlined"
                 value={dialogStaffCode}
+                error={!!errors.dialogStaffCode}
+                helperText={<Typography color="error">{errors.dialogStaffCode}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -525,10 +660,12 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogName}
+                error={!!errors.dialogName}
+                helperText={<Typography color="error">{errors.dialogName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogGender}>
                 <InputLabel id="gender-select">Gender</InputLabel>
                 <Select
                   labelId ="gender-select"
@@ -540,10 +677,13 @@ const Staff = () => {
                   <MenuItem value="Male">Male</MenuItem>
                   <MenuItem value="Female">Female</MenuItem>
                 </Select>
+                {errors.dialogGender && (
+                  <FormHelperText error><Typography color="error">{errors.dialogGender}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogRole}>
                 <InputLabel id="role-select">Role</InputLabel>
                 <Select
                   labelId ="role-select"
@@ -562,6 +702,9 @@ const Staff = () => {
                     <MenuItem disabled>No roles set up yet</MenuItem>
                   )}
                 </Select>
+                {errors.dialogRole && (
+                  <FormHelperText error><Typography color="error">{errors.dialogRole}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
@@ -574,6 +717,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogJoinDate}
+                error={!!errors.dialogJoinDate}
+                helperText={<Typography color="error">{errors.dialogJoinDate}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -586,7 +731,7 @@ const Staff = () => {
             </Grid>
             {!isAllBranch && (
               <Grid item xs={12} md={12}>
-                <FormControl fullWidth margin="dense">
+                <FormControl fullWidth margin="dense" error={!!errors.dialogBranchName}>
                   <InputLabel id="branch-select">Branch Name</InputLabel>
                   <Select
                     labelId ="branch-select"
@@ -603,6 +748,9 @@ const Staff = () => {
                       <MenuItem disabled>No branches set up yet</MenuItem>
                     )}
                   </Select>
+                  {errors.dialogBranchName && (
+                    <FormHelperText error><Typography color="error">{errors.dialogBranchName}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             )}
@@ -621,6 +769,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogUsername}
+                error={!!errors.dialogUsername}
+                helperText={<Typography color="error">{errors.dialogUsername}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -632,6 +782,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogPassword}
+                error={!!errors.dialogPassword}
+                helperText={<Typography color="error">{errors.dialogPassword}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -643,6 +795,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmail}
+                error={!!errors.dialogEmail}
+                helperText={<Typography color="error">{errors.dialogEmail}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -654,6 +808,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogPosition}
+                error={!!errors.dialogPosition}
+                helperText={<Typography color="error">{errors.dialogPosition}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -671,6 +827,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogFullName}
+                error={!!errors.dialogFullName}
+                helperText={<Typography color="error">{errors.dialogFullName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -682,6 +840,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogNRIC}
+                error={!!errors.dialogNRIC}
+                helperText={<Typography color="error">{errors.dialogNRIC}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -693,6 +853,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogReligion}
+                error={!!errors.dialogReligion}
+                helperText={<Typography color="error">{errors.dialogReligion}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -704,10 +866,12 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogMobileNo}
+                error={!!errors.dialogMobileNo}
+                helperText={<Typography color="error">{errors.dialogMobileNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogMartialStatus}>
                 <InputLabel id="martial-status-select">Martial Status</InputLabel>
                 <Select
                   labelId ="martial-status-select"
@@ -721,6 +885,9 @@ const Staff = () => {
                   <MenuItem value="Divorced">Divorced</MenuItem>
                   <MenuItem value="Widowed">Widowed</MenuItem>
                 </Select>
+                {errors.dialogMartialStatus && (
+                  <FormHelperText error><Typography color="error">{errors.dialogMartialStatus}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
@@ -734,6 +901,8 @@ const Staff = () => {
                 row={3}
                 variant="outlined"
                 value={dialogCurrentAddress}
+                error={!!errors.dialogCurrentAddress}
+                helperText={<Typography color="error">{errors.dialogCurrentAddress}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -751,6 +920,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogBankName}
+                error={!!errors.dialogBankName}
+                helperText={<Typography color="error">{errors.dialogBankName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -762,6 +933,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogAccountNo}
+                error={!!errors.dialogAccountNo}
+                helperText={<Typography color="error">{errors.dialogAccountNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -773,6 +946,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEPFONo}
+                error={!!errors.dialogEPFONo}
+                helperText={<Typography color="error">{errors.dialogEPFONo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -784,6 +959,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogSOCSNo}
+                error={!!errors.dialogSOCSNo}
+                helperText={<Typography color="error">{errors.dialogSOCSNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -795,6 +972,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogIncomeTaxNo}
+                error={!!errors.dialogIncomeTaxNo}
+                helperText={<Typography color="error">{errors.dialogIncomeTaxNo}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -812,6 +991,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmergencyContactName}
+                error={!!errors.dialogEmergencyContactName}
+                helperText={<Typography color="error">{errors.dialogEmergencyContactName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -823,6 +1004,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmergencyRelation}
+                error={!!errors.dialogEmergencyRelation}
+                helperText={<Typography color="error">{errors.dialogEmergencyRelation}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -834,6 +1017,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmergencyContact}
+                error={!!errors.dialogEmergencyContact}
+                helperText={<Typography color="error">{errors.dialogEmergencyContact}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -882,12 +1067,21 @@ const Staff = () => {
             <Grid item xs={6} md={6}>
               <TextField
                 onChange={(e) => setDialogStaffCode(e.target.value)}
+                onBlur={() => {
+                  const error = dialogStaffCode.length !== 10 ? 'Staff Code must be exactly 10 characters' : null;
+                  setErrors((prev) => ({
+                    ...prev,
+                    dialogStaffCode: error,
+                  }));
+                }}
                 margin="dense"
                 label="Staff Code"
                 type="text"
                 fullWidth
                 variant="outlined"
                 value={dialogStaffCode}
+                error={!!errors.dialogStaffCode}
+                helperText={<Typography color="error">{errors.dialogStaffCode}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -899,10 +1093,12 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogName}
+                error={!!errors.dialogName}
+                helperText={<Typography color="error">{errors.dialogName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogGender}>
                 <InputLabel id="gender-select">Gender</InputLabel>
                 <Select
                   labelId ="gender-select"
@@ -914,10 +1110,13 @@ const Staff = () => {
                   <MenuItem value="Male">Male</MenuItem>
                   <MenuItem value="Female">Female</MenuItem>
                 </Select>
+                {errors.dialogGender && (
+                  <FormHelperText error><Typography color="error">{errors.dialogGender}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogRole}>
                 <InputLabel id="role-select">Role</InputLabel>
                 <Select
                   labelId ="role-select"
@@ -936,6 +1135,9 @@ const Staff = () => {
                     <MenuItem disabled>No roles set up yet</MenuItem>
                   )}
                 </Select>
+                {errors.dialogRole && (
+                  <FormHelperText error><Typography color="error">{errors.dialogRole}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
@@ -948,6 +1150,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogJoinDate}
+                error={!!errors.dialogJoinDate}
+                helperText={<Typography color="error">{errors.dialogJoinDate}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6} sx={{ display: 'flex', alignItems: 'center' }}>
@@ -960,7 +1164,7 @@ const Staff = () => {
             </Grid>
             {!isAllBranch && (
               <Grid item xs={12} md={12}>
-                <FormControl fullWidth margin="dense">
+                <FormControl fullWidth margin="dense" error={!!errors.dialogBranchName}>
                   <InputLabel id="branch-select">Branch Name</InputLabel>
                   <Select
                     labelId ="branch-select"
@@ -977,6 +1181,9 @@ const Staff = () => {
                       <MenuItem disabled>No branches set up yet</MenuItem>
                     )}
                   </Select>
+                  {errors.dialogBranchName && (
+                    <FormHelperText error><Typography color="error">{errors.dialogBranchName}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             )}
@@ -995,6 +1202,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogUsername}
+                error={!!errors.dialogUsername}
+                helperText={<Typography color="error">{errors.dialogUsername}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1006,6 +1215,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogPassword}
+                error={!!errors.dialogPassword}
+                helperText={<Typography color="error">{errors.dialogPassword}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1017,6 +1228,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmail}
+                error={!!errors.dialogEmail}
+                helperText={<Typography color="error">{errors.dialogEmail}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1028,6 +1241,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogPosition}
+                error={!!errors.dialogPosition}
+                helperText={<Typography color="error">{errors.dialogPosition}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -1045,6 +1260,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogFullName}
+                error={!!errors.dialogFullName}
+                helperText={<Typography color="error">{errors.dialogFullName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1056,6 +1273,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogNRIC}
+                error={!!errors.dialogNRIC}
+                helperText={<Typography color="error">{errors.dialogNRIC}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1067,6 +1286,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogReligion}
+                error={!!errors.dialogReligion}
+                helperText={<Typography color="error">{errors.dialogReligion}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1078,10 +1299,12 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogMobileNo}
+                error={!!errors.dialogMobileNo}
+                helperText={<Typography color="error">{errors.dialogMobileNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogMartialStatus}>
                 <InputLabel id="martial-status-select">Martial Status</InputLabel>
                 <Select
                   labelId ="martial-status-select"
@@ -1095,6 +1318,9 @@ const Staff = () => {
                   <MenuItem value="Divorced">Divorced</MenuItem>
                   <MenuItem value="Widowed">Widowed</MenuItem>
                 </Select>
+                {errors.dialogMartialStatus && (
+                  <FormHelperText error><Typography color="error">{errors.dialogMartialStatus}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1108,6 +1334,8 @@ const Staff = () => {
                 row={3}
                 variant="outlined"
                 value={dialogCurrentAddress}
+                error={!!errors.dialogCurrentAddress}
+                helperText={<Typography color="error">{errors.dialogCurrentAddress}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -1125,6 +1353,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogBankName}
+                error={!!errors.dialogBankName}
+                helperText={<Typography color="error">{errors.dialogBankName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1136,6 +1366,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogAccountNo}
+                error={!!errors.dialogAccountNo}
+                helperText={<Typography color="error">{errors.dialogAccountNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1147,6 +1379,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEPFONo}
+                error={!!errors.dialogEPFONo}
+                helperText={<Typography color="error">{errors.dialogEPFONo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1158,6 +1392,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogSOCSNo}
+                error={!!errors.dialogSOCSNo}
+                helperText={<Typography color="error">{errors.dialogSOCSNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1169,6 +1405,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogIncomeTaxNo}
+                error={!!errors.dialogIncomeTaxNo}
+                helperText={<Typography color="error">{errors.dialogIncomeTaxNo}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -1186,6 +1424,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmergencyContactName}
+                error={!!errors.dialogEmergencyContactName}
+                helperText={<Typography color="error">{errors.dialogEmergencyContactName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1197,6 +1437,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmergencyRelation}
+                error={!!errors.dialogEmergencyRelation}
+                helperText={<Typography color="error">{errors.dialogEmergencyRelation}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -1208,6 +1450,8 @@ const Staff = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEmergencyContact}
+                error={!!errors.dialogEmergencyContact}
+                helperText={<Typography color="error">{errors.dialogEmergencyContact}</Typography>}                
               />
             </Grid>
             <Grid item xs={12} md={12}>
