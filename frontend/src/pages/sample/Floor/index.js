@@ -443,7 +443,7 @@ const Floor = () => {
               />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <FormControl fullWidth margin="dense"  error={!!errors.dialogBranch}>
+              <FormControl fullWidth margin="dense" error={!!errors.dialogBranch}>
                 <InputLabel>Branch</InputLabel>
                 <Select
                   value={dialogBranch}
@@ -456,8 +456,8 @@ const Floor = () => {
                     </MenuItem>
                   ))}
                 </Select>
-                {errors.branch && (
-                  <FormHelperText error><Typography color="error">{errors.branch}</Typography></FormHelperText>
+                {errors.dialogBranch && (
+                  <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
                 )}
               </FormControl>
             </Grid>
@@ -550,10 +550,12 @@ const Floor = () => {
                 value={dialogFloorNumber}
                 onChange={(e) => setDialogFloorNumber(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogFloorNumber}
+                helperText={<Typography color="error">{errors.dialogFloorNumber}</Typography>}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogBranch}>
                 <InputLabel>Branch</InputLabel>
                 <Select
                   value={dialogBranch}
@@ -566,6 +568,9 @@ const Floor = () => {
                     </MenuItem>
                   ))}
                 </Select>
+                {errors.dialogBranch && (
+                  <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={12}>
@@ -576,6 +581,8 @@ const Floor = () => {
                 value={dialogFloorDetail}
                 onChange={(e) => setDialogFloorDetail(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogFloorDetail}
+                helperText={<Typography color="error">{errors.dialogFloorDetail}</Typography>}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
@@ -612,6 +619,8 @@ const Floor = () => {
                 value={dialogOrder}
                 onChange={(e) => setDialogOrder(e.target.value)}
                 margin="dense"
+                error={!!errors.dialogOrder}
+                helperText={<Typography color="error">{errors.dialogOrder}</Typography>}
               />
             </Grid>
             <Grid item xs={12} sm={12}>
