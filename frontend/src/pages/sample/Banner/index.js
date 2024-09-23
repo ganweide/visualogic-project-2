@@ -35,6 +35,7 @@ const bannerURL = "http://localhost:5000/api/banner"
 const Banner = () => {
   const [bannerDatabase, setBannerDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     bannerImageDataUrl: { value: null, matchMode: 'contains' },
@@ -127,6 +128,40 @@ const Banner = () => {
     setSnackbarOpen(false);
   };
 
+  // Data Validation
+  const validateBannerFields = (fields) => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogImage) {
+      validationErrors.dialogImage = 'Image is required';
+      isValid = false;
+    }
+    if (!dialogAlwaysCheckbox) {
+      if (!dialogDisplayStartDate && !dialogDisplayEndDate) {
+        validationErrors.dialogDisplayStartDate = 'Display From is required if Always is not checked';
+        validationErrors.dialogDisplayEndDate = 'Display Until is required if Always is not checked';
+        isValid = false;
+      } else {
+        // Check individual fields
+        if (!dialogDisplayStartDate) {
+          validationErrors.dialogDisplayStartDate = 'Display From is required';
+          isValid = false;
+        }
+        if (!dialogDisplayEndDate) {
+          validationErrors.dialogDisplayEndDate = 'Display Until is required';
+          isValid = false;
+        }
+      }
+    }
+    if (!dialogSortOrder) {
+      validationErrors.dialogSortOrder = 'Order is required';
+      isValid = false;
+    }
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [addNewBannerDialogOpen, setAddNewBannerDialogOpen] = useState(false);
   const handleOpenAddNewBannerDialog = () => {
@@ -141,17 +176,33 @@ const Banner = () => {
     setDialogDisplayEndDate("");
     setDialogSortOrder("");
     setDialogActiveSwitch(true);
+    setErrors({});
     setAddNewBannerDialogOpen(false);
   }
 
   const handleSaveNewBanner = async () => {
     try {
+      const fields = {
+        dialogImage,
+        dialogAlwaysCheckbox,
+        dialogDisplayStartDate,
+        dialogDisplayEndDate,
+        dialogSortOrder,
+      };
+
+      const { isValid, validationErrors } = validateBannerFields(fields);
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const data = {
         bannerImageUrl: dialogImage,
         bannerImageDataUrl: dialogImageData,
         alwaysStatus: dialogAlwaysCheckbox,
-        startDate: dialogDisplayStartDate,
-        endDate: dialogDisplayEndDate,
+        startDate: dialogAlwaysCheckbox ? null : dialogDisplayStartDate,
+        endDate: dialogAlwaysCheckbox ? null : dialogDisplayEndDate,
         bannerOrder: dialogSortOrder,
         bannerStatus: dialogActiveSwitch,
       };
@@ -187,6 +238,7 @@ const Banner = () => {
   const handleCloseEditDialog = () => {
     setEditDialogOpen(false);
     setEditingBannerId(null);
+    setErrors({});
     setDialogImage("");
     setDialogAlwaysCheckbox(false);
     setDialogDisplayStartDate("");
@@ -197,11 +249,26 @@ const Banner = () => {
 
   const handleSaveEditBanner = async () => {
     try {
+      const fields = {
+        dialogImage,
+        dialogAlwaysCheckbox,
+        dialogDisplayStartDate,
+        dialogDisplayEndDate,
+        dialogSortOrder,
+      };
+
+      const { isValid, validationErrors } = validateBannerFields(fields);
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedBannerData = {
         bannerImageUrl: dialogImage,
         alwaysStatus: dialogAlwaysCheckbox,
-        startDate: dialogDisplayStartDate,
-        endDate: dialogDisplayEndDate,
+        startDate: dialogAlwaysCheckbox ? null : dialogDisplayStartDate,
+        endDate: dialogAlwaysCheckbox ? null : dialogDisplayEndDate,
         bannerOrder: dialogSortOrder,
         bannerStatus: dialogActiveSwitch,
       };
@@ -380,7 +447,7 @@ const Banner = () => {
                   <Box
                     {...dropzoneProps}
                     sx={{
-                      border: '2px dashed #cccccc',
+                      border: `2px dashed ${errors.dialogImage ? 'red' : '#cccccc'}`,
                       borderRadius: '4px',
                       padding: '20px',
                       textAlign: 'center',
@@ -401,6 +468,11 @@ const Banner = () => {
                       <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
                     )}
                   </Box>
+                  {errors.dialogImage && (
+                    <Typography color="error" variant="body2" style={{ marginTop: '8px' }}>
+                      {errors.dialogImage}
+                    </Typography>
+                  )}
                 </Grid>
               </Grid>
             </Grid>
@@ -422,6 +494,8 @@ const Banner = () => {
                     fullWidth
                     variant="outlined"
                     value={dialogDisplayStartDate}
+                    error={!!errors.dialogDisplayStartDate}
+                    helperText={<Typography color="error">{errors.dialogDisplayStartDate}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={6} md={6}>
@@ -434,6 +508,8 @@ const Banner = () => {
                     fullWidth
                     variant="outlined"
                     value={dialogDisplayEndDate}
+                    error={!!errors.dialogDisplayEndDate}
+                    helperText={<Typography color="error">{errors.dialogDisplayEndDate}</Typography>}
                   />
                 </Grid>
               </>
@@ -447,6 +523,8 @@ const Banner = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogSortOrder}
+                error={!!errors.dialogSortOrder}
+                helperText={<Typography color="error">{errors.dialogSortOrder}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -495,7 +573,7 @@ const Banner = () => {
                   <Box
                       {...dropzoneProps}
                       sx={{
-                        border: '2px dashed #cccccc',
+                        border: `2px dashed ${errors.dialogImage ? 'red' : '#cccccc'}`,
                         borderRadius: '4px',
                         padding: '20px',
                         textAlign: 'center',
@@ -516,6 +594,11 @@ const Banner = () => {
                         <Typography>Drag &apos;n&apos; drop an image here, or click to select one</Typography>
                     )}
                   </Box>
+                  {errors.dialogImage && (
+                    <Typography color="error" variant="body2" style={{ marginTop: '8px' }}>
+                      {errors.dialogImage}
+                    </Typography>
+                  )}
                 </Grid>
               </Grid>
             </Grid>
@@ -537,6 +620,8 @@ const Banner = () => {
                       fullWidth
                       variant="outlined"
                       value={dialogDisplayStartDate}
+                      error={!!errors.dialogDisplayStartDate}
+                      helperText={<Typography color="error">{errors.dialogDisplayStartDate}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={6} md={6}>
@@ -549,6 +634,8 @@ const Banner = () => {
                       fullWidth
                       variant="outlined"
                       value={dialogDisplayEndDate}
+                      error={!!errors.dialogDisplayEndDate}
+                      helperText={<Typography color="error">{errors.dialogDisplayEndDate}</Typography>}
                   />
                 </Grid>
               </>
@@ -562,6 +649,8 @@ const Banner = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogSortOrder}
+                error={!!errors.dialogSortOrder}
+                helperText={<Typography color="error">{errors.dialogSortOrder}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
