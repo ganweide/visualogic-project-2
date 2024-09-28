@@ -20,7 +20,10 @@ import {
   Checkbox,
   Divider,
   Switch,
-  IconButton, Snackbar, Alert,
+  IconButton,
+  Snackbar,
+  Alert,
+  FormHelperText,
 } from "@mui/material";
 
 import { DataTable } from 'primereact/datatable';
@@ -39,6 +42,7 @@ const messageURL = "http://localhost:5000/api/message"
 const Messages = () => {
   const [messageDatabase, setMessageDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     messageText: { value: null, matchMode: 'contains' },
@@ -55,7 +59,7 @@ const Messages = () => {
   const [dialogAlwaysCheckbox, setDialogAlwaysCheckbox] = useState(false);
   const [dialogDisplayStartDate, setDialogDisplayStartDate] = useState("");
   const [dialogDisplayEndDate, setDialogDisplayEndDate] = useState("");
-  const [dialogSortOrder, setDialogSortOrder] = useState("");
+  const [dialogSortOrder, setDialogSortOrder] = useState("1");
   const [dialogActiveSwitch, setDialogActiveSwitch] = useState(true);
 
   // Retrieve Data
@@ -170,6 +174,36 @@ const Messages = () => {
     }
     setSnackbarOpen(false);
   };
+
+  // Data Validation
+  const validateMessageFields = () => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogMessageType) {
+      validationErrors.dialogMessageType = 'Message Type is required';
+      isValid = false;
+    }
+    if (!dialogMessage) {
+      validationErrors.dialogMessage = 'Message is required';
+      isValid = false;
+    }
+    if (!dialogAlwaysCheckbox && !dialogDisplayStartDate) {
+      validationErrors.dialogDisplayStartDate = 'Start Date is required if Always is not checked';
+      isValid = false;
+    }
+    if (!dialogAlwaysCheckbox && !dialogDisplayEndDate) {
+      validationErrors.dialogDisplayEndDate = 'End Date is required if Always is not checked';
+      isValid = false;
+    }
+    if (!dialogSortOrder) {
+      validationErrors.dialogSortOrder = 'Sort Order is required';
+      isValid = false;
+    }
+
+    return { isValid, validationErrors };
+  }
   
   // Dialog Actions
   const [addNewMessageDialogOpen, setAddNewMessageDialogOpen] = useState(false);
@@ -185,13 +219,21 @@ const Messages = () => {
     setDialogAlwaysCheckbox(false);
     setDialogDisplayStartDate("");
     setDialogDisplayEndDate("");
-    setDialogSortOrder("");
+    setDialogSortOrder("1");
     setDialogActiveSwitch(true);
+    setErrors({});
     setAddNewMessageDialogOpen(false);
   }
 
   const handleCreateNewMessage = async () => {
     try {
+      const { isValid, validationErrors } = validateMessageFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const data = {
         messageType: dialogMessageType,
         message: dialogMessage,
@@ -203,6 +245,8 @@ const Messages = () => {
         messageOrder: dialogSortOrder,
         messageStatus: dialogActiveSwitch,
       };
+
+      console.log('Message to be saved:', data);
 
       const response = await axios.post(messageURL, data);
       console.log('New message added: ',response.data);
@@ -245,12 +289,20 @@ const Messages = () => {
     setDialogAlwaysCheckbox(false);
     setDialogDisplayStartDate("");
     setDialogDisplayEndDate("");
-    setDialogSortOrder("");
+    setDialogSortOrder("1");
+    setErrors({});
     setDialogActiveSwitch(true);
   }
 
   const handleSaveEditMessage = async () => {
     try {
+      const { isValid, validationErrors } = validateMessageFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedMessageData = {
         messageType: dialogMessageType,
         message: dialogMessage,
@@ -298,13 +350,13 @@ const Messages = () => {
   const handleDeleteMessage = async () => {
     try {
       await axios.delete(`${messageURL}/${deletingMessage._id}`);
-      setSnackbarMessage('Branch deleted successfully');
+      setSnackbarMessage('Message deleted successfully');
       setSnackbarSeverity('success');
       setSnackbarOpen(true);
       setRefreshTable(prev => !prev);
     } catch (error) {
-      console.error('Error deleting branch:', error);
-      setSnackbarMessage('Error deleting branch');
+      console.error('Error deleting message:', error);
+      setSnackbarMessage('Error deleting message');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     } finally {
@@ -426,7 +478,7 @@ const Messages = () => {
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogMessageType}>
                 <InputLabel id="message-type-select">Message Type</InputLabel>
                 <Select
                   labelId ="message-type-select"
@@ -440,10 +492,16 @@ const Messages = () => {
                   <MenuItem value="Wishes">Wishes</MenuItem>
                   <MenuItem value="Booking">Booking</MenuItem>
                 </Select>
+                {errors.dialogMessageType && (
+                  <FormHelperText error><Typography color="error">{errors.dialogMessageType}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
               <TipTapEditor message={setDialogMessage} />
+              {errors.dialogMessage && (
+                <FormHelperText error><Typography color="error">{errors.dialogMessage}</Typography></FormHelperText>
+              )}
             </Grid>
             <Grid item xs={12} md={12}>
               <Divider />
@@ -502,6 +560,8 @@ const Messages = () => {
                     fullWidth
                     variant="outlined"
                     value={dialogDisplayStartDate}
+                    error={!!errors.dialogDisplayStartDate}
+                    helperText={<Typography color="error">{errors.dialogDisplayStartDate}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={6} md={6}>
@@ -514,6 +574,8 @@ const Messages = () => {
                     fullWidth
                     variant="outlined"
                     value={dialogDisplayEndDate}
+                    error={!!errors.dialogDisplayEndDate}
+                    helperText={<Typography color="error">{errors.dialogDisplayEndDate}</Typography>}
                   />
                 </Grid>
               </>
@@ -527,6 +589,8 @@ const Messages = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogSortOrder}
+                error={!!errors.dialogSortOrder}
+                helperText={<Typography color="error">{errors.dialogSortOrder}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>

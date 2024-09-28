@@ -22,6 +22,7 @@ import {
   Divider,
   Snackbar,
   Alert,
+  FormHelperText,
  } from '@mui/material'
 
 import { DataTable } from 'primereact/datatable';
@@ -42,6 +43,7 @@ const Package = () => {
   const [packageDatabase, setPackageDatabase] = useState([]);
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   const [filters, setFilters] = useState({
     packageName: { value: null, matchMode: 'contains' },
@@ -124,6 +126,59 @@ const Package = () => {
     setDialogActiveSwitch(!dialogActiveSwitch);
   };
 
+  // Data Validation
+  const validatePackageFields = () => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogPackageName) {
+      validationErrors.dialogPackageName = 'Package Name is required';
+      isValid = false;
+    }
+    if (!dialogPackageCode) {
+      validationErrors.dialogPackageCode = 'Package Code is required';
+      isValid = false;
+    } else if (dialogPackageCode.length !== 10) {
+      validationErrors.dialogPackageCode = 'Package Code format is incorrect';
+      isValid = false
+    }
+    if (!dialogPrice) {
+      validationErrors.dialogPrice = 'Price is required';
+      isValid = false;
+    }
+    if (!dialogCategory) {
+      validationErrors.dialogCategory = 'Category is required';
+      isValid = false;
+    }
+    if (!isUnlimited && !dialogNumberOfTime) {
+      validationErrors.dialogNumberOfTime = 'Number of Times is required if Unlimited is not checked';
+      isValid = false;
+    }
+    if (!dialogPackageValidity) {
+      validationErrors.dialogPackageValidity = 'Package Validity is required';
+      isValid = false;
+    }
+    if (!isAllBranch && !dialogBranch) {
+      validationErrors.dialogBranch = 'Branch is required if All Branch is not checked';
+      isValid = false;
+    }
+    if (isPromotion && !dialogPromoTime) {
+      validationErrors.dialogPromoTime = 'Promotion Times is required if Promotion is checked';
+      isValid = false;
+    }
+    if (isPromotion && !dialogPromoPeriodFrom) {
+      validationErrors.dialogPromoPeriodFrom = 'Promo Period From is required if Promotion is checked';
+      isValid = false;
+    }
+    if (isPromotion && !dialogPromoPeriodTo) {
+      validationErrors.dialogPromoPeriodTo = 'Promo Period To is required if Promotion is checked';
+      isValid = false;
+    }
+
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [openAddNewPackage, setOpenAddNewPackage] = useState(false);
   const handleOpenAddNewPackage = () => {
@@ -131,11 +186,37 @@ const Package = () => {
   }
 
   const handleCloseAddNewPackage = () => {
+    setDialogPackageName("");
+    setDialogPackageCode("");
+    setDialogPrice("");
+    setDialogCategory("");
+    setDialogPicture("");
+    setDialogPackageValidity("");
+    setDialogOrder("1");
+    setDialogNumberOfTime("");
+    setDialogPromoTime("");
+    setDialogPromoPeriodFrom("");
+    setDialogPromoPeriodTo("");
+    setDialogBranch("");
+    setDialogTransferableSwitch(false);
+    setDialogIndividualPackageSwitch(false);
+    setIsPromotion(false);
+    setDialogActiveSwitch(true);
+    setIsAllBranch(false);
+    setIsUnlimited(false);
+    setErrors({});
     setOpenAddNewPackage(false);
   }
 
   const handleSaveNewPackage = async () => {
     try{
+      const { isValid, validationErrors } = validatePackageFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const data = {
         packageName: dialogPackageName,
         packageCode: dialogPackageCode,
@@ -199,6 +280,7 @@ const Package = () => {
 
   const handleCloseEditDialog = () => {
     setEditDialogOpen(false);
+    setEditingPackageId(null);
     setDialogPackageName("");
     setDialogPackageCode("");
     setDialogPrice("");
@@ -217,10 +299,18 @@ const Package = () => {
     setDialogActiveSwitch(true);
     setIsAllBranch(false);
     setIsUnlimited(false);
+    setErrors({});
   }
 
   const handleSaveEditPackage = async () => {
     try {
+      const { isValid, validationErrors } = validatePackageFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedPackageData = {
         packageName: dialogPackageName,
         packageCode: dialogPackageCode,
@@ -446,16 +536,28 @@ const Package = () => {
               value={dialogPackageName}
               onChange={(e) => setDialogPackageName(e.target.value)}
               margin="dense"
+              error={!!errors.dialogPackageName}
+              helperText={<Typography color="error">{errors.dialogPackageName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
               <TextField
-              label="Package Code"
-              variant="outlined"
-              fullWidth
-              value={dialogPackageCode}
-              onChange={(e) => setDialogPackageCode(e.target.value)}
-              margin="dense"
+                label="Package Code"
+                variant="outlined"
+                fullWidth
+                value={dialogPackageCode}
+                onChange={(e) => setDialogPackageCode(e.target.value)}
+                onBlur={() => {
+                  const error = dialogPackageCode.length !== 10 ? 'Package Code must be exactly 10 characters' : null;
+                  setErrors((prev) => ({
+                    ...prev,
+                    dialogPackageCode: error,
+                  }));
+                }}
+                margin="dense"
+                inputProps={{ maxLength: 10 }}
+                error={!!errors.dialogPackageCode}
+                helperText={<Typography color="error">{errors.dialogPackageCode}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -466,10 +568,12 @@ const Package = () => {
               value={dialogPrice}
               onChange={(e) => setDialogPrice(e.target.value)}
               margin="dense"
+              error={!!errors.dialogPrice}
+              helperText={<Typography color="error">{errors.dialogPrice}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogCategory}>
                 <InputLabel>Category</InputLabel>{" "}
                 <Select
                 value={dialogCategory}
@@ -484,6 +588,9 @@ const Package = () => {
                   <MenuItem value="Normal">Normal</MenuItem>
                   <MenuItem value="Promotion">Promotion</MenuItem>
                 </Select>
+                {errors.dialogCategory && (
+                  <FormHelperText error><Typography color="error">{errors.dialogCategory}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item container xs={12} md={12} alignItems="center" spacing={2}>
@@ -516,6 +623,8 @@ const Package = () => {
                     value={dialogNumberOfTime}
                     onChange={(e) => setDialogNumberOfTime(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogNumberOfTime}
+                    helperText={<Typography color="error">{errors.dialogNumberOfTime}</Typography>}
                   />
                 </Grid>
               )}
@@ -548,16 +657,19 @@ const Package = () => {
                 </Grid>
               </Grid>
               <Grid item xs={6} md={6}>
-                <FormControl fullWidth margin="dense">
-                  <InputLabel>Package Validity</InputLabel>{" "}
+                <FormControl fullWidth margin="dense" error={!!errors.dialogPackageValidity}>
+                  <InputLabel>Package Validity</InputLabel>
                   <Select
                   value={dialogPackageValidity}
                   onChange={(e) => setDialogPackageValidity(e.target.value)}
-                  label="Category"
+                  label="Package Validity"
                   >
                     <MenuItem value="Life Time">Life Time</MenuItem>
                     <MenuItem value="1 Year">1 Year</MenuItem>
                   </Select>
+                  {errors.dialogPackageValidity && (
+                    <FormHelperText error><Typography color="error">{errors.dialogPackageValidity}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -590,6 +702,8 @@ const Package = () => {
                     value={dialogPromoTime}
                     onChange={(e) => setDialogPromoTime(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogPromoTime}
+                    helperText={<Typography color="error">{errors.dialogPromoTime}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={4} md={4}>
@@ -602,6 +716,8 @@ const Package = () => {
                     value={dialogPromoPeriodFrom}
                     onChange={(e) => setDialogPromoPeriodFrom(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogPromoPeriodFrom}
+                    helperText={<Typography color="error">{errors.dialogPromoPeriodFrom}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={4} md={4}>
@@ -614,6 +730,8 @@ const Package = () => {
                     value={dialogPromoPeriodTo}
                     onChange={(e) => setDialogPromoPeriodTo(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogPromoPeriodTo}
+                    helperText={<Typography color="error">{errors.dialogPromoPeriodTo}</Typography>}
                   />
                 </Grid>
               </>
@@ -639,7 +757,7 @@ const Package = () => {
             </Grid>
             {!isAllBranch && (
               <Grid item xs={12} md={12}>
-                <FormControl fullWidth margin="dense">
+                <FormControl fullWidth margin="dense" error={!!errors.dialogBranch}>
                   <InputLabel>Branch</InputLabel>
                   <Select
                     value={dialogBranch}
@@ -652,6 +770,9 @@ const Package = () => {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.dialogBranch && (
+                    <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             )}
@@ -751,6 +872,8 @@ const Package = () => {
               value={dialogPackageName}
               onChange={(e) => setDialogPackageName(e.target.value)}
               margin="dense"
+              error={!!errors.dialogPackageName}
+              helperText={<Typography color="error">{errors.dialogPackageName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -760,7 +883,17 @@ const Package = () => {
               fullWidth
               value={dialogPackageCode}
               onChange={(e) => setDialogPackageCode(e.target.value)}
+              onBlur={() => {
+                const error = dialogPackageCode.length !== 10 ? 'Package Code must be exactly 10 characters' : null;
+                setErrors((prev) => ({
+                  ...prev,
+                  dialogPackageCode: error,
+                }));
+              }}
               margin="dense"
+              inputProps={{ maxLength: 10 }}
+              error={!!errors.dialogPackageCode}
+              helperText={<Typography color="error">{errors.dialogPackageCode}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -771,10 +904,12 @@ const Package = () => {
               value={dialogPrice}
               onChange={(e) => setDialogPrice(e.target.value)}
               margin="dense"
+              error={!!errors.dialogPrice}
+              helperText={<Typography color="error">{errors.dialogPrice}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogCategory}>
                 <InputLabel>Category</InputLabel>{" "}
                 <Select
                 value={dialogCategory}
@@ -789,6 +924,9 @@ const Package = () => {
                   <MenuItem value="Normal">Normal</MenuItem>
                   <MenuItem value="Promotion">Promotion</MenuItem>
                 </Select>
+                {errors.dialogCategory && (
+                  <FormHelperText error><Typography color="error">{errors.dialogCategory}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item container xs={12} md={12} alignItems="center" spacing={2}>
@@ -821,6 +959,8 @@ const Package = () => {
                     value={dialogNumberOfTime}
                     onChange={(e) => setDialogNumberOfTime(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogNumberOfTime}
+                    helperText={<Typography color="error">{errors.dialogNumberOfTime}</Typography>}
                   />
                 </Grid>
               )}
@@ -853,7 +993,7 @@ const Package = () => {
                 </Grid>
               </Grid>
               <Grid item xs={6} md={6}>
-                <FormControl fullWidth margin="dense">
+                <FormControl fullWidth margin="dense" error={!!errors.dialogPackageValidity}>
                   <InputLabel>Package Validity</InputLabel>
                   <Select
                   value={dialogPackageValidity}
@@ -863,6 +1003,9 @@ const Package = () => {
                     <MenuItem value="Life Time">Life Time</MenuItem>
                     <MenuItem value="1 Year">1 Year</MenuItem>
                   </Select>
+                  {errors.dialogPackageValidity && (
+                    <FormHelperText error><Typography color="error">{errors.dialogPackageValidity}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             </Grid>
@@ -895,6 +1038,8 @@ const Package = () => {
                     value={dialogPromoTime}
                     onChange={(e) => setDialogPromoTime(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogPromoTime}
+                    helperText={<Typography color="error">{errors.dialogPromoTime}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={4} md={4}>
@@ -907,6 +1052,8 @@ const Package = () => {
                     value={dialogPromoPeriodFrom}
                     onChange={(e) => setDialogPromoPeriodFrom(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogPromoPeriodFrom}
+                    helperText={<Typography color="error">{errors.dialogPromoPeriodFrom}</Typography>}
                   />
                 </Grid>
                 <Grid item xs={4} md={4}>
@@ -919,6 +1066,8 @@ const Package = () => {
                     value={dialogPromoPeriodTo}
                     onChange={(e) => setDialogPromoPeriodTo(e.target.value)}
                     margin="dense"
+                    error={!!errors.dialogPromoPeriodTo}
+                    helperText={<Typography color="error">{errors.dialogPromoPeriodTo}</Typography>}
                   />
                 </Grid>
               </>
@@ -944,7 +1093,7 @@ const Package = () => {
             </Grid>
             {!isAllBranch && (
               <Grid item xs={12} md={12}>
-                <FormControl fullWidth margin="dense">
+                <FormControl fullWidth margin="dense" error={!!errors.dialogBranch}>
                   <InputLabel>Branch</InputLabel>
                   <Select
                     value={dialogBranch}
@@ -957,6 +1106,9 @@ const Package = () => {
                       </MenuItem>
                     ))}
                   </Select>
+                  {errors.dialogBranch && (
+                    <FormHelperText error><Typography color="error">{errors.dialogBranch}</Typography></FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             )}

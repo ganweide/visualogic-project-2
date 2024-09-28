@@ -22,6 +22,7 @@ import {
   MenuItem,
   Snackbar,
   Alert,
+  FormHelperText,
 } from "@mui/material";
 
 import { DataTable } from 'primereact/datatable';
@@ -40,6 +41,7 @@ const Branch = () => {
   const [branchDatabase, setBranchDatabase] = useState([]);
   const [staffDatabase, setStaffDatabase] = useState([]);
   const [refreshTable, setRefreshTable] = useState([]);
+  const [errors, setErrors] = useState({});
 
   // Add New Branch Dialog Constants
   const [dialogAreaName, setDialogAreaName]                       = useState("");
@@ -145,6 +147,51 @@ const Branch = () => {
     setSnackbarOpen(false);
   };
 
+  // Data Validation
+  const validateBranchFields = () => {
+    let isValid = true;
+    let validationErrors = {};
+
+    // Validation logic
+    if (!dialogBranchCode) {
+      validationErrors.dialogBranchCode = 'Branch Code is required';
+      isValid = false;
+    } else if (dialogBranchCode.length !== 10) {
+      validationErrors.dialogBranchCode = 'Branch Code format is incorrect';
+      isValid = false
+    }
+    if (!dialogBranchName) {
+      validationErrors.dialogBranchName = 'Branch Name is required';
+      isValid = false;
+    }
+    if (!dialogAreaName) {
+      validationErrors.dialogAreaName = 'Area is required';
+      isValid = false;
+    }
+    if (!dialogAddress) {
+      validationErrors.dialogAddress = 'Address is required';
+      isValid = false;
+    }
+    if (!dialogStartOperatingHours) {
+      validationErrors.dialogStartOperatingHours = 'Operating Hours From is required';
+      isValid = false;
+    }
+    if (!dialogEndOperatingHours) {
+      validationErrors.dialogEndOperatingHours = 'Operating Hours To is required';
+      isValid = false;
+    }
+    if (!dialogWhatsappNo) {
+      validationErrors.dialogWhatsappNo = 'Whatsapp No. is required';
+      isValid = false;
+    }
+    if (!dialogContact) {
+      validationErrors.dialogContact = 'Contact is required';
+      isValid = false;
+    }
+
+    return { isValid, validationErrors };
+  }
+
   // Dialog Actions
   const [addNewBranchDialogOpen, setAddNewBranchDialogOpen] = useState(false);
   const handleOpenAddNewBranchDialog = () => {
@@ -171,12 +218,20 @@ const Branch = () => {
     setDialogTaxSwitch(false);
     setDialogTaxPercent("");
     setDialogOwnBranchPercent("");
+    setErrors({});
     setDialogActiveSwitch(true);
     setAddNewBranchDialogOpen(false);
   }
 
   const handleSaveNewBranch = async () => {
     try {
+      const { isValid, validationErrors } = validateBranchFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const data = {
         branchCode: dialogBranchCode,
         branchName: dialogBranchName,
@@ -270,11 +325,19 @@ const Branch = () => {
     setDialogTaxSwitch(false);
     setDialogTaxPercent("");
     setDialogOwnBranchPercent("");
+    setErrors({});
     setDialogActiveSwitch(true);
   }
 
   const handleSaveEditBranch = async () => {
     try {
+      const { isValid, validationErrors } = validateBranchFields();
+
+      if (!isValid) {
+        setErrors(validationErrors);
+        return;
+      }
+
       const updatedBranchData = {
         branchCode: dialogBranchCode,
         branchName: dialogBranchName,
@@ -473,6 +536,13 @@ const Branch = () => {
             <Grid item xs={6} md={6}>
               <TextField
                 onChange={(e) => setDialogBranchCode(e.target.value)}
+                onBlur={() => {
+                  const error = dialogBranchCode.length !== 10 ? 'Branch Code must be exactly 10 characters' : null;
+                  setErrors((prev) => ({
+                    ...prev,
+                    dialogBranchCode: error,
+                  }));
+                }}
                 margin="dense"
                 label="Branch Code"
                 type="text"
@@ -480,7 +550,8 @@ const Branch = () => {
                 variant="outlined"
                 value={dialogBranchCode}
                 inputProps={{ maxLength: 10 }}
-                helperText="Only allows 10 characters"
+                error={!!errors.dialogBranchCode}
+                helperText={<Typography color="error">{errors.dialogBranchCode}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -492,6 +563,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogBranchName}
+                error={!!errors.dialogBranchName}
+                helperText={<Typography color="error">{errors.dialogBranchName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -503,6 +576,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogAreaName}
+                error={!!errors.dialogAreaName}
+                helperText={<Typography color="error">{errors.dialogAreaName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -516,6 +591,8 @@ const Branch = () => {
                 row={3}
                 variant="outlined"
                 value={dialogAddress}
+                error={!!errors.dialogAddress}
+                helperText={<Typography color="error">{errors.dialogAddress}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -556,6 +633,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogStartOperatingHours}
+                error={!!errors.dialogStartOperatingHours}
+                helperText={<Typography color="error">{errors.dialogStartOperatingHours}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -568,6 +647,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEndOperatingHours}
+                error={!!errors.dialogEndOperatingHours}
+                helperText={<Typography color="error">{errors.dialogEndOperatingHours}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -585,10 +666,12 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogWhatsappNo}
+                error={!!errors.dialogWhatsappNo}
+                helperText={<Typography color="error">{errors.dialogWhatsappNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogContact}>
                 <InputLabel id="contact-select">Contact</InputLabel>
                 <Select
                   labelId ="contact-select"
@@ -607,6 +690,9 @@ const Branch = () => {
                     <MenuItem disabled>No staffs set up yet</MenuItem>
                   )}
                 </Select>
+                {errors.dialogContact && (
+                  <FormHelperText error><Typography color="error">{errors.dialogContact}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
@@ -790,6 +876,13 @@ const Branch = () => {
             <Grid item xs={6} md={6}>
               <TextField
                 onChange={(e) => setDialogBranchCode(e.target.value)}
+                onBlur={() => {
+                  const error = dialogBranchCode.length !== 10 ? 'Branch Code must be exactly 10 characters' : null;
+                  setErrors((prev) => ({
+                    ...prev,
+                    dialogBranchCode: error,
+                  }));
+                }}
                 margin="dense"
                 label="Branch Code"
                 type="text"
@@ -797,7 +890,8 @@ const Branch = () => {
                 variant="outlined"
                 value={dialogBranchCode}
                 inputProps={{ maxLength: 10 }}
-                helperText="Only allows 10 characters"
+                error={!!errors.dialogBranchCode}
+                helperText={<Typography color="error">{errors.dialogBranchCode}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -809,6 +903,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogBranchName}
+                error={!!errors.dialogBranchName}
+                helperText={<Typography color="error">{errors.dialogBranchName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -820,6 +916,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogAreaName}
+                error={!!errors.dialogAreaName}
+                helperText={<Typography color="error">{errors.dialogAreaName}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -833,6 +931,8 @@ const Branch = () => {
                 row={3}
                 variant="outlined"
                 value={dialogAddress}
+                error={!!errors.dialogAddress}
+                helperText={<Typography color="error">{errors.dialogAddress}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -873,6 +973,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogStartOperatingHours}
+                error={!!errors.dialogStartOperatingHours}
+                helperText={<Typography color="error">{errors.dialogStartOperatingHours}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
@@ -885,6 +987,8 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogEndOperatingHours}
+                error={!!errors.dialogEndOperatingHours}
+                helperText={<Typography color="error">{errors.dialogEndOperatingHours}</Typography>}
               />
             </Grid>
             <Grid item xs={12} md={12}>
@@ -902,10 +1006,12 @@ const Branch = () => {
                 fullWidth
                 variant="outlined"
                 value={dialogWhatsappNo}
+                error={!!errors.dialogWhatsappNo}
+                helperText={<Typography color="error">{errors.dialogWhatsappNo}</Typography>}
               />
             </Grid>
             <Grid item xs={6} md={6}>
-              <FormControl fullWidth margin="dense">
+              <FormControl fullWidth margin="dense" error={!!errors.dialogContact}>
                 <InputLabel id="contact-select">Contact</InputLabel>
                 <Select
                   labelId ="contact-select"
@@ -924,6 +1030,9 @@ const Branch = () => {
                     <MenuItem disabled>No staffs set up yet</MenuItem>
                   )}
                 </Select>
+                {errors.dialogContact && (
+                  <FormHelperText error><Typography color="error">{errors.dialogContact}</Typography></FormHelperText>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} md={12}>
