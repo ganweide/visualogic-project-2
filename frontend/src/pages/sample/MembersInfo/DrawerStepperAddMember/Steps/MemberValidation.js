@@ -59,6 +59,14 @@ const MemberValidation = () => {
 
   return (
     <Formik
+      initialValues={{
+        registrationDate: '',
+        membershipStatus: '',
+        name: '',
+        branch: '',
+        existingMobileNumber: '',
+        paymentMethod: '',
+      }}
       validationSchema={validationSchema}
       onSubmit={(data) => handleSubmit(data)}
     >
@@ -108,17 +116,17 @@ const MemberValidation = () => {
                       label={<IntlMessages id='member.branch' />}
                     />
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    {membershipStatus === "existing" && (
-                      <Grid item xs={12} md={6}>
-                        <AppTextField
-                          name='existingPhoneNumber' // Bind input to state
-                          fullWidth
-                          label={<IntlMessages id="member.ExistingPhoneNumber" />}
-                        />
-                      </Grid>
-                    )}
-                  </Grid>
+                  {values.membershipStatus === "existing" && ( // Check within Formik's values
+                    <Grid item xs={12} md={6}>
+                      <AppTextField
+                        name='existingMobileNumber'
+                        fullWidth
+                        label={<IntlMessages id="member.ExistingMobileNumber" />}
+                        onChange={handleChange} // Bind to Formik's handleChange
+                        value={values.existingMobileNumber} // Bind value to Formik's values
+                      />
+                    </Grid>
+                  )}
                   <Grid item xs={12} md={12}>
                     <FormControl component="fieldset">
                       <FormLabel component="legend">Payment Method</FormLabel>
@@ -135,18 +143,6 @@ const MemberValidation = () => {
                   </AppGridContainer>
                 </CardContent>
               </Card>
-            </Box>
-            {/* Navigation Buttons */}
-            <Box
-              sx={{
-                position: 'sticky',
-                bottom: 0,
-                zIndex: 1,
-                backgroundColor: 'background.paper',
-                padding: 2,
-                textAlign: 'right',
-              }}
-            >
             </Box>
           </Box>
         </Form>

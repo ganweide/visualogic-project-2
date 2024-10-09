@@ -81,6 +81,7 @@ const DrawerStepperAddMember = ({ isOpen, setOpenDialog, reCallAPI }) => {
           />
         </Box>
           <StepperForm
+            validationSchema={validationSchema}
             isViewOnly={false}
             onCloseAddCard={() => setOpenDialog(false)}
           />

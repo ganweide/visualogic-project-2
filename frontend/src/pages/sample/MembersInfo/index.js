@@ -13,7 +13,6 @@ import { Dropdown } from 'primereact/dropdown';
 
 import MemberDetail from './MemberDetail';
 import AddMember from './AddMember';
-import AddNewMember from './AddNewMember';
 import DrawerStepper from './DrawerStepperAddMember';
 import {postDataApi, useGetDataApi} from '@enjoey/utility/APIHooks';
 

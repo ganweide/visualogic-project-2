@@ -67,6 +67,25 @@ const MemberPersonal = () => {
 
   return (
     <Formik
+      initialValues={{
+        fullName: '',
+        preferredName: '',
+        chineseName: '',
+        nricPassport: '',
+        dateOfBirth: '',
+        age: '',
+        gender: '',
+        address: '',
+        city: '',
+        postcode: '',
+        states: '',
+        mobileNumber: '',
+        emailAddress: '',
+        howDidYouHearAboutUs: '',
+        emergencyContactName: '',
+        emergencyContactMobileNumber: '',
+        emergencyContactRelationship: '',
+      }}
       validationSchema={validationSchema}
       onSubmit={(data) => handleSubmit(data)}
     >
@@ -174,35 +193,35 @@ const MemberPersonal = () => {
                     label={<IntlMessages id='member.mobileNumber' />}
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12}>
                   <AppTextField
                     name='emailAddress'
                     fullWidth
                     label={<IntlMessages id='member.emailAddress' />}
                   />
                 </Grid>
-                <Grid item xs={12} md={9}>
+                <Grid item xs={12} md={6}>
                   <AppTextField
                     name='emergencyContactName'
                     fullWidth
                     label={<IntlMessages id='member.emergencyContactName' />}
                   />
                 </Grid>
-                <Grid item xs={12} md={9}>
+                <Grid item xs={12} md={6}>
                   <AppTextField
                     name='emergencyContactMobileNumber'
                     fullWidth
                     label={<IntlMessages id='member.emergencyContactMobileNumber' />}
                   />
                 </Grid>
-                <Grid item xs={12} md={9}>
+                <Grid item xs={12} md={6}>
                   <AppTextField
                     name='emergencyContactRelationship'
                     fullWidth
                     label={<IntlMessages id='member.emergencyContactRelationship' />}
                   />
                 </Grid>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12}>
                   <AppTextField
                       name="howDidYouHearAboutUs"
                       fullWidth

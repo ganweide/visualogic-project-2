@@ -80,6 +80,21 @@ const MemberMedical = () => {
   
     return (
       <Formik
+        initialValues={{
+          medicalHistory: '',
+          recentOperation: false,
+          severeHeartDisease: false,
+          severeCirculatoryProblems: false,
+          cardiacPacemaker: false,
+          cancer: false,
+          severeHighBloodPressure: false,
+          skinDisease: false,
+          viralInfection: false,
+          fever: false,
+          recentScars: false,
+          pregnancy: false,
+          understandAboveInformation: false,
+        }}
         validationSchema={validationSchema}
         onSubmit={(data) => handleSubmit(data)}
       >

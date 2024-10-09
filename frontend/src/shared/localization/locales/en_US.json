@@ -988,7 +988,7 @@
   "member.medicalHistory": "Medical History",
   "member.others": "Others",
   "member.understandAboveInformation": "I understand above mentioned precautions and give consent that i do not have any health related issue.",
-  "member.emergencyContactName": "Name",
-  "member.emergencyContactMobileNumber": "Mobile Number",
-  "member.emergencyContactRelationship": "Relationship"
+  "member.emergencyContactName": "Emergency Contact Name",
+  "member.emergencyContactMobileNumber": "Emergency Contact Mobile Number",
+  "member.emergencyContactRelationship": "Emergency Contact Relationship"
 }

@@ -128,17 +128,17 @@ const AddMemberForm = ({values, errors}) => {
                       label={<IntlMessages id='member.branch' />}
                     />
                   </Grid>
-                  <Grid item xs={12} md={6}>
-                    {membershipStatus === "existing" && (
-                      <Grid item xs={12} md={6}>
-                        <AppTextField
-                          name='existingPhoneNumber' // Bind input to state
-                          fullWidth
-                          label={<IntlMessages id="member.ExistingPhoneNumber" />}
-                        />
-                      </Grid>
-                    )}
-                  </Grid>
+                  {values.membershipStatus === "existing" && ( // Check within Formik's values
+                    <Grid item xs={12} md={6}>
+                      <AppTextField
+                        name='existingMobileNumber'
+                        fullWidth
+                        label={<IntlMessages id="member.ExistingMobileNumber" />}
+                        onChange={handleChange} // Bind to Formik's handleChange
+                        value={values.existingMobileNumber} // Bind value to Formik's values
+                      />
+                    </Grid>
+                  )}
                   <Grid item xs={12} md={12}>
                     <FormControl component="fieldset">
                       <FormLabel component="legend">Payment Method</FormLabel>
