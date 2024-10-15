@@ -8,8 +8,12 @@ import {
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
+import { useGetDataApi } from "@enjoey/utility/APIHooks";
 
-export default function BookingSession({selectedMember}) {
+export default function BookingSession({rawData,selectedMember}) {
+    if (!rawData || !rawData.MB_registration_date) {
+        return <div>Error: Member data is missing.</div>;
+      }
     const toast = useRef(null);
 
     const [filters, setFilters] = useState({
@@ -21,8 +25,8 @@ export default function BookingSession({selectedMember}) {
         bookingStatus: { value: null, matchMode: "contains" },
     });
 
-    const [{apiData: memberData, loading}, {reCallAPI}] = useGetDataApi(
-        `api/booking/${selectedMember._id}`,
+    const [{apiData: memberData, loading}] = useGetDataApi(
+        `http://localhost:5000/api/booking/${selectedMember._id}`,
         {},
         {},
         true,

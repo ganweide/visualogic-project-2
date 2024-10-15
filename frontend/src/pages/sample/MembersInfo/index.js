@@ -12,11 +12,12 @@ import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
 
 import MemberDetail from './MemberDetail';
-import AddMember from './AddMember';
-import DrawerStepper from './DrawerStepperAddMember';
-import {postDataApi, useGetDataApi} from '@enjoey/utility/APIHooks';
+import AddNewMember from './AddNewMember';
+import {useGetDataApi} from '@enjoey/utility/APIHooks';
 
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import clsx from 'clsx';
+import { Fonts } from 'shared/constants/AppEnums';
 
 const MembersInfo = () => {
 
@@ -28,12 +29,14 @@ const MembersInfo = () => {
   });
 
   const [{apiData: memberDatabase, loading}, {reCallAPI}] = useGetDataApi(
-    'api/member',
+    'http://localhost:5000/api/members/',
     {},
     {},
     true,
   );
   
+  console.log('memberDatabase', memberDatabase);
+
   
   const [addNewMemberDialogOpen, setAddNewMemberDialogOpen] = useState(false);
   const handleOpenAddNewMemberDialog = () => {
@@ -47,11 +50,11 @@ const MembersInfo = () => {
   // Datatable Templates
   const genderBodyTemplate = (rowData) => {
     switch (rowData.memberGender) {
-      case 'M':
+      case 'Male':
         return 'Male';
-      case 'F':
+      case 'Female':
         return 'Female';
-      case 'T':
+      case 'Treansgender':
         return 'Transgender';
       default:
         return 'Other';
@@ -60,9 +63,9 @@ const MembersInfo = () => {
 
   const genderFilterTemplate = (options) => {
     const genderOptions = [
-      { label: 'Male', value: 'M' },
-      { label: 'Female', value: 'F' },
-      { label: 'Transgender', value: 'T' }
+      { label: 'Male', value: 'Male' },
+      { label: 'Female', value: 'Female' },
+      { label: 'Transgender', value: 'Transgender' }
     ];
   
     return (
@@ -113,7 +116,7 @@ const MembersInfo = () => {
             },
           }}
         >
-          Member Details : {selectedMember?.memberName.toUpperCase()}
+          Member Details : {selectedMember?.memberName}
         </Box>
         <MemberDetail
           selectedMember={selectedMember}
@@ -149,7 +152,7 @@ const MembersInfo = () => {
               filters={filters}
               filterDisplay='row'
               loading={loading}
-              emptyMessage='No branch found.'
+              emptyMessage='No member found.'
               selectionMode='single'
               onSelectionChange={(e) => setSelectedMember(e.value)}
               // selection={selectedProduct}
@@ -157,7 +160,7 @@ const MembersInfo = () => {
               stripedRows
             >
               <Column
-                field="memberDate"
+                field="MB_registration_date"
                 header="Date"
                 filter
                 filterPlaceholder="Filter by Date"
@@ -165,7 +168,7 @@ const MembersInfo = () => {
                 sortable
               />
               <Column
-                field="memberName"
+                field="MB_preferred_name"
                 header="Name"
                 filter
                 filterPlaceholder="Filter by Name"
@@ -173,21 +176,21 @@ const MembersInfo = () => {
                 sortable
               />
               <Column
-                field="memberMobileNumber"
+                field="MB_mobile_number"
                 header="Mobile No"
                 filter
                 filterPlaceholder="Filter by Mobile Number"
                 style={{ minWidth: '12rem' }}
               />
               <Column
-                field="memberEmail"
+                field="MB_email"
                 header="Email"
                 filter
                 filterPlaceholder="Filter by Email"
                 style={{ minWidth: '12rem' }}
               />
               <Column
-                field="memberGender"
+                field="MB_gender"
                 header="Gender"
                 body={genderBodyTemplate}
                 filter
@@ -195,7 +198,7 @@ const MembersInfo = () => {
                 style={{ minWidth: '12rem' }}
               />
               <Column
-                field="memberBranch"
+                field="MB_preferred_branch"
                 header="Prefered Branch"
                 filter
                 filterPlaceholder="Filter by Pefered Branch"
@@ -215,7 +218,7 @@ const MembersInfo = () => {
           </Grid>
         </Grid>
       </Card>
-      <DrawerStepper
+      <AddNewMember
         isOpen={addNewMemberDialogOpen}
         setOpenDialog={handleCloseAddNewMemberDialog}
         reCallAPI={reCallAPI}

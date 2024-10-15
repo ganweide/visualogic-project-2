@@ -13,6 +13,7 @@ import {styled} from '@mui/material/styles';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 // import {useAuthUser} from '@anran/utility/AuthHooks';
+import {Fonts} from 'shared/constants/AppEnums';
 
 const StyledTabs = styled((props) => (
   <Tabs

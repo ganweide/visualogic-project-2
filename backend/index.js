@@ -22,6 +22,7 @@ app.use('/api/role', require('./routes/roleRoutes'));
 app.use('/api/floor', require('./routes/floorRoutes'));
 app.use('/api/room', require('./routes/roomRoutes'));
 app.use('/api/package', require('./routes/packageRoutes'));
+app.use('/api/members', require('./routes/membersRoute'));
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

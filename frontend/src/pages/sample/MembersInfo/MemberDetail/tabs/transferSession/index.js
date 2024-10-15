@@ -8,17 +8,20 @@ import {
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { Toast } from "primereact/toast";
+import { useGetDataApi } from "@enjoey/utility/APIHooks";
 
-
-export default function TransferSession({selectedMember}) {
+export default function TransferSession({rawData,selectedMember}) {
+    if (!rawData || !rawData.MB_registration_date) {
+        return <div>Error: Member data is missing.</div>;
+      }
     const toast = useRef(null);
 
     const [filters, setFilters] = useState({
         transferDate: { value: null, matchMode: "contains" },
     });
 
-    const [{apiData: memberData, loading}, {reCallAPI}] = useGetDataApi(
-        `api/transfer/${selectedMember._id}`,
+    const [{apiData: memberData, loading}] = useGetDataApi(
+        `http://localhost:5000/api/transfer/${selectedMember._id}`,
         {},
         {},
         true,

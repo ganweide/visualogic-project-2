@@ -15,23 +15,25 @@ import AppInfoView from '@enjoey/core/AppInfoView';
 import {Card} from '@mui/material';
 import AppScrollbar from '@enjoey/core/AppScrollbar';
 
-const memberDetails = ({selectedMember, setSelectedMember}) => {
+const MemberDetail = ({selectedMember, setSelectedMember}) => {
   const {user} = useAuthUser();
   console.log('useAuthUser:', user);
   console.log('selectedMember', selectedMember);
 
   const [mainTabValue, setMainTabValue] = React.useState(0);
 
-  const [{apiData: memberData}, {setQueryParams, reCallAPI}] = useGetDataApi(
-    `api/member/${selectedMember._id}`,
+  const [{ apiData: memberData }, { setQueryParams, reCallAPI }] = useGetDataApi(
+    selectedMember && selectedMember._id 
+      ? `http://localhost:5000/api/members/${selectedMember._id}` 
+      : '',
     undefined,
-    {id: selectedMember.id},
-    true,
+    { id: selectedMember?.id },
+    true
   );
 
   useEffect(() => {
     if (selectedMember) {
-      setQueryParams({id: selectedMember.id});
+      setQueryParams({id: selectedMember._id});
     }
   }, [selectedMember]);
 
@@ -106,9 +108,9 @@ const memberDetails = ({selectedMember, setSelectedMember}) => {
   );
 };
 
-export default memberDetails;
+export default MemberDetail;
 
-MemberDetails.propTypes = {
+MemberDetail.propTypes = {
   selectedMember: PropTypes.object,
   setSelectedMember: PropTypes.func,
 };

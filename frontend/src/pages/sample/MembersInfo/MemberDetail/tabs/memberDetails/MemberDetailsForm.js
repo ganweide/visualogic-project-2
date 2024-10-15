@@ -26,6 +26,7 @@ import { useGetDataApi } from '@enjoey/utility/APIHooks';
 import MenuItem from '@mui/material/MenuItem';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import { Field } from 'formik';
 
 const MemberDetailsForm = ({
     values,
@@ -34,7 +35,7 @@ const MemberDetailsForm = ({
     onViewOnly,
 }) => {
     const [{apiData: memberList}] = useGetDataApi(
-        'api/member',
+        'http://localhost:5000/api/members',
         {},
         {},
         true,
@@ -42,35 +43,6 @@ const MemberDetailsForm = ({
 
     const onCancelClick = () => {
         onViewOnly(true);
-    };
-
-    const [selectedConditions, setSelectedConditions] = useState([]);
-
-    // Handle Conditions List
-    const conditionsList = [
-      "Recent Operation",
-      "Severe Heart Disease",
-      "Severe Circulatory Problems",
-      "Cardiac Pacemaker",
-      "Cancer/Cancer Treatment (Chemo/Targeted Therapy)",
-      "Severe High Blood Pressure",
-      "Skin Disease",
-      "Viral Infection",
-      "Fever",
-      "Recent Scars",
-      "Pregnancy",
-      "During Period",
-      "None of the Above"
-    ];
-
-    // Handle Checkbox Change
-    const handleCheckboxChange = (e) => {
-      const { name } = e.target;
-      if (selectedConditions.includes(name)) {
-        setSelectedConditions(selectedConditions.filter((condition) => condition !== name));
-      } else {
-        setSelectedConditions([...selectedConditions, name]);
-      }
     };
 
     console.log('memberList', memberList);
@@ -99,7 +71,7 @@ const MemberDetailsForm = ({
                       <AppGridContainer spacing={4}>
                         <Grid item xs={12} md={9}>
                           <AppTextField
-                            name='memberRegistrationDate'
+                            name='MB_registration_date'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.RegistrationDate' />}
@@ -108,49 +80,14 @@ const MemberDetailsForm = ({
                           />
                         </Grid>
                         <Grid item xs={12} md={9}>
-                          <AppTextField
-                            name="membershipStatus"
-                            fullWidth
-                            disabled={isViewOnly}
-                            label={<IntlMessages id="member.MembershipStatus" />}
-                            select
-                            onChange={handleMembershipStatusChange}
-                          >
-                            <MenuItem value ="new">
-                              <IntlMessages id="member.newMember" />
-                            </MenuItem>
-                            <MenuItem value ="existing">
-                              <IntlMessages id="member.existingMember" />
-                            </MenuItem>
-                          </AppTextField>
                         </Grid>
                         <Grid item xs={12} md={9}>
                           <AppTextField
-                            name='name'
-                            fullWidth
-                            disabled={isViewOnly}
-                            label={<IntlMessages id='member.Name' />}
-                          />
-                        </Grid>
-                        <Grid item xs={12} md={9}>
-                          <AppTextField
-                            name='branch'
+                            name='MB_preferred_branch'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.branch' />}
                           />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                          {membershipStatus === "existing" && (
-                            <Grid item xs={12} md={6}>
-                              <AppTextField
-                                name='existingPhoneNumber' // Bind input to state
-                                fullWidth
-                                disabled={isViewOnly}
-                                label={<IntlMessages id="member.ExistingPhoneNumber" />}
-                              />
-                            </Grid>
-                          )}
                         </Grid>
                         <Grid item xs={12} md={12}>
                           <FormControl component="fieldset">
@@ -160,7 +97,7 @@ const MemberDetailsForm = ({
                               fullWidth
                               disabled={isViewOnly}
                               label={<IntlMessages id="member.PaymentMethod" />}
-                              name="paymentMethod"
+                              name="MB_payment_method"
                             >
                               <FormControlLabel value="One-off" control={<Radio />} label="Debit/Credit Card (One-off)" />
                               <FormControlLabel value="Installment" control={<Radio />} label="Debit/Credit Card (Installment)" />
@@ -189,10 +126,10 @@ const MemberDetailsForm = ({
                     }
                   ></CardHeader>
                   <CardContent>
-                    <AppGridContainer spacing={5}>
+                    <AppGridContainer spacing={4}>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='fullName'
+                            name='MB_full_name'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.fullName' />}
@@ -200,7 +137,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='preferredName'
+                            name='MB_preferred_name'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.preferredName' />}
@@ -208,7 +145,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='chineseName'
+                            name='MB_chinese_name'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.chineseName' />}
@@ -216,7 +153,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='nricPassport'
+                            name='MB_IC_number'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.nricPassport' />}
@@ -224,7 +161,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='dateOfBirth'
+                            name='MB_dob'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.dateOfBirth' />}
@@ -232,7 +169,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='age'
+                            name='MB_age'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.age' />}
@@ -240,7 +177,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='gender'
+                            name='MB_gender'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.gender' />}
@@ -248,7 +185,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='address'
+                            name='MB_address'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.address' />}
@@ -256,7 +193,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='city'
+                            name='MB_city'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.city' />}
@@ -264,7 +201,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='postcode'
+                            name='MB_postcode'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.postcode' />}
@@ -272,7 +209,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='states'
+                            name='MB_states'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.states' />}
@@ -280,7 +217,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='mobileNumber'
+                            name='MB_mobile_number'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.mobileNumber' />}
@@ -288,34 +225,47 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='emailAddress'
+                            name='MB_email'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.emailAddress' />}
                           />
                       </Grid>
                       <Grid item xs={12} md={9}>
-                          <AppTextField
-                            name="howDidYouHearAboutUs"
-                            fullWidth
-                            disabled={isViewOnly}
-                            label={<IntlMessages id="member.howDidYouHearAboutUs" />}
-                            select
-                            onChange={handleHowDidYouHearAboutUs}
-                          >
-                            <MenuItem value ="Family"><IntlMessages id="member.family" /></MenuItem>
-                            <MenuItem value ="Friend"><IntlMessages id="member.friend" /></MenuItem>
-                            <MenuItem value ="Facebook"><IntlMessages id="member.facebook" /></MenuItem>
-                            <MenuItem value ="Advertisement"><IntlMessages id="member.advertisement" /></MenuItem>
-                            <MenuItem value ="Anran Outlet"><IntlMessages id="member.anranOutlet" /></MenuItem>
-                            <MenuItem value ="Others"><IntlMessages id="member.others" /></MenuItem>
-                          </AppTextField>
+                      <AppTextField
+                        name='MB_suggested_by'
+                        fullWidth
+                        disabled={isViewOnly}
+                        label={
+                          <IntlMessages id='member.howDidYouHearAboutUs' />
+                        }
+                        select
+                      >
+                        <MenuItem value='Family'>
+                          <IntlMessages id='member.family' />
+                        </MenuItem>
+                        <MenuItem value='Friend'>
+                          <IntlMessages id='member.friend' />
+                        </MenuItem>
+                        <MenuItem value='Facebook'>
+                          <IntlMessages id='member.facebook' />
+                        </MenuItem>
+                        <MenuItem value='Advertisement'>
+                          <IntlMessages id='member.advertisement' />
+                        </MenuItem>
+                        <MenuItem value='Anran Outlet'>
+                          <IntlMessages id='member.anranOutlet' />
+                        </MenuItem>
+                        <MenuItem value='Others'>
+                          <IntlMessages id='member.others' />
+                        </MenuItem>
+                      </AppTextField>
                       </Grid>
                     </AppGridContainer>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card variant='outlined' sx={{mt:2}}>
                 <CardHeader
                     sx={{p:0, mt:2, ml:2}}
                     title={
@@ -333,7 +283,7 @@ const MemberDetailsForm = ({
                     }
                   ></CardHeader>
                   <CardContent>
-                    <AppGridContainer spacing={5}>
+                    <AppGridContainer spacing={4}>
                     <Grid item xs={12} md={9}>
                         <AppTextField
                             name='medicalHistory'
@@ -348,38 +298,182 @@ const MemberDetailsForm = ({
                         <Box sx={{display: 'flex', flexDirectoin:'collumn'}}>
                           <Grid item xs={12} md={12}>
                             <FormLabel component="legend" sx={{mb: 5}}>Do you have or have you suffered from any of the following?</FormLabel>
-                            <FormGroup>
-                                {conditionsList.map((condition) => (
-                                <FormControlLabel
-                                  sx={{mb:{xs: 4, xl: 6}, ml: 0, mt: -3}}
-                                  disabled={
-                                    isViewOnly ? true : values.conditionsList.includes(condition) ? false : true
-                                  }
-                                    key={condition}
-                                    control={
-                                    <Checkbox
-                                        name={condition}
-                                        checked={selectedConditions.includes(condition)}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    }
-                                    label={condition}
+                            <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_recent_operation"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_recent_operation} // Bind to Formik
                                 />
-                                ))}
-                            </FormGroup>
-                            <Box mt={2}>
-                                {selectedConditions.join(", ")}
-                            </Box>
+                              }
+                              label={<IntlMessages id="member.recentOperation" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_severe_heart_disease"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_severe_heart_disease} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.severeHeartDisease" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_severe_circulatory_problems"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_severe_circulatory_problems} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.severeCirculatoryProblems" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_cardiac_pacemaker"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_cardiac_pacemaker} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.cardiacPacemaker" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_cancer_treatment"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_cancer_treatment} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.cancer" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_severe_high_blood_pressure"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_severe_high_blood_pressure} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.severeHighBloodPressure" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_skin_disease"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_skin_disease} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.skinDisease" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_viral_infection"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_viral_infection} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.viralInfection" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_fever"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_fever} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.fever" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_recent_scars"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_recent_scars} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.recentScars" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_pregnancy_during_period"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_pregnancy_during_period} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.pregnancy" />}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={12}>
+                            <FormControlLabel
+                              control={
+                                <Field
+                                  type="checkbox"
+                                  as={Checkbox}
+                                  name="MB_MC_none_of_the_above"
+                                  disabled={isViewOnly}
+                                  checked={values.MB_MC_none_of_the_above} // Bind to Formik
+                                />
+                              }
+                              label={<IntlMessages id="member.noneOfTheAbove" />}
+                            />
+                          </Grid>
                           </Grid>
                         </Box>
                       </Grid>
                     </AppGridContainer>
-
-                    <AppGridContainer spacing={5}></AppGridContainer>
                   </CardContent>
                 </Card>
 
-                <Card>
+                <Card variant='outlined' sx={{mt:2}}>
                 <CardHeader
                     sx={{p:0, mt:2, ml:2}}
                     title={
@@ -397,10 +491,10 @@ const MemberDetailsForm = ({
                     }
                   ></CardHeader>
                   <CardContent>
-                    <AppGridContainer spacing={5}>
+                    <AppGridContainer spacing={4}>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                          name='emergencyContactName'
+                          name='MB_EC_name'
                           fullWidth
                           disabled={isViewOnly}
                           label={<IntlMessages id='member.emergencyContactName' />}
@@ -408,7 +502,7 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='emergencyContactMobileNumber'
+                            name='MB_EC_mobile_number'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.emergencyContactMobileNumber' />}
@@ -416,15 +510,13 @@ const MemberDetailsForm = ({
                       </Grid>
                       <Grid item xs={12} md={9}>
                         <AppTextField
-                            name='emergencyContactRelationship'
+                            name='MB_EC_relationship'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.emergencyContactRelationship' />}
                           />
                       </Grid>
                     </AppGridContainer>
-
-                    <AppGridContainer spacing={5}></AppGridContainer>
                   </CardContent>
                 </Card>
 
@@ -483,219 +575,3 @@ MemberDetailsForm.propTypes={
   reCallAPI: PropTypes.func,
   member: PropTypes.object,
 };
-
-{/*return (
-    <Box>
-    <Card sx={{ mt: 2, p: 5,}}>
-      <Grid container spacing={25}>
-      <Grid item xs={12}>
-        <Box display="flex" justifyContent="space-between" mb={2}>
-          <Typography variant="h6">Details</Typography>
-        </Box>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12}>
-            <TextField
-              label="Member Registration Date"
-              type="date"
-              InputLabelProps={{shrink: true}}
-              variant="outlined"
-              fullWidth
-              value={dialogMemberRegistrationDate}
-              onChange={(e)=> handleDialogMemberRegistrationDate(e,"memberRegistrationDate")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <TextField
-              label="Member Name"
-              variant="outlined"
-              fullWidth
-              value={dialogMemberName}
-              onChange={(e) => handleDialogmemberName(e, "memberName")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={6} sm={6}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Preferred Branch</InputLabel>
-              <Select
-                value={dialogBranch}
-                onChange={(e) => handleDialogInputChange(e, "branch")}
-                label="Branch"
-              >
-                {branchData.map((branch) => (
-                  <MenuItem key={branch.id} value={branch.branchName}>
-                    {branch.branchName}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <FormControl component="fieldset">
-              <FormLabel component="legend">Payment Method</FormLabel>
-              <RadioGroup
-                row // Display radio buttons horizontally
-                aria-label="payment-method"
-                name="paymentMethod"
-                value={dialogPaymentMethod}
-                onChange={(e) => setDialogPaymentMethod(e, "paymentMethod")}
-              >
-                <FormControlLabel value="One-off" control={<Radio />} label="Debit/Credit Card (One-off)" />
-                <FormControlLabel value="Installment" control={<Radio />} label="Debit/Credit Card (Installment)" />
-              </RadioGroup>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} md={12}>
-            <Divider />
-          </Grid>
-          <Grid item xs={12} md={12}>
-            <Typography variant='h6'>A. Personal Information</Typography>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Legal Full Name (as per NRIC/Passport)"
-              variant="outlined"
-              fullWidth
-              value={dialogFullName}
-              onChange={(e) => handleDialogInputChange(e, "fullName")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Preferred Name"
-              variant="outlined"
-              fullWidth
-              value={dialogPreferredName}
-              onChange={(e) => handleDialogInputChange(e, "preferredName")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Chinese Name (if applicable)"
-              variant="outlined"
-              fullWidth
-              value={dialogChineseName}
-              onChange={(e) => handleDialogInputChange(e, "chineseName")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="NRIC/Passport No."
-              variant="outlined"
-              fullWidth
-              value={dialogNRICPassport}
-              onChange={(e) => handleDialogInputChange(e, "nricPassport")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Date of Birth"
-              variant="outlined"
-              type="date"
-              InputLabelProps={{shrink: true}}
-              fullWidth
-              value={dialogDateOfBirth}
-              onChange={(e) => handleDialogInputChange(e, "dateOfBirth")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Age"
-              variant="outlined"
-              type="number"
-              fullWidth
-              value={dialogAge}
-              onChange={(e) => handleDialogInputChange(e, "age")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={6} md={6}>
-            <FormControl fullWidth margin="dense">
-              <InputLabel>Gender</InputLabel>
-              <Select
-              value={dialogGender}
-              onChange={(e) => handleDialogInputChange(e, "gender")}
-              label="Gender"
-              >
-                <MenuItem value="Male">Male</MenuItem>
-                <MenuItem value="Female">Female</MenuItem>
-                <MenuItem value="Transgender">Transgender</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6} md={6}>
-            <TextField
-              label="Mobile Number"
-              variant="outlined"
-              fullWidth
-              value={dialogMobileNumber}
-              onChange={(e) => handleDialogInputChange(e, "mobileNumber")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={6} md={6}>
-            <TextField
-              label="Email Address"
-              variant="outlined"
-              type='email'
-              fullWidth
-              value={dialogEmailAddress}
-              onChange={(e) => handleDialogInputChange(e, "emailAddress")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={12} md={12}>
-            <TextField
-              label="Address"
-              variant="outlined"
-              multiline // Enable multiline input
-              rows={5} // Specify the number of rows to make it larger
-              fullWidth
-              value={dialogAddress}
-              onChange={(e) => handleDialogInputChange(e, "address")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={6} md={6}>
-            <TextField
-              label="City"
-              variant="outlined"
-              fullWidth
-              value={dialogCity}
-              onChange={(e) => handleDialogInputChange(e, "city")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={6} md={6}>
-            <TextField
-              label="Postcode"
-              variant="outlined"
-              fullWidth
-              value={dialogPostcode}
-              onChange={(e) => handleDialogInputChange(e, "postcode")}
-              margin="dense"
-            />
-          </Grid>
-          <Grid item xs={6} md={6}>
-            <TextField
-              label="States"
-              variant="outlined"
-              fullWidth
-              value={dialogStates}
-              onChange={(e) => handleDialogInputChange(e, "states")}
-              margin="dense"
-            />
-          </Grid>
-        </Grid>
-        </Grid>
-      </Grid>
-    </Card>
-  </Box>
-  );
-*/}

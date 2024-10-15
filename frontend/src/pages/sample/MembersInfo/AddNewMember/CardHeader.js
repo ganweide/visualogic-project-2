@@ -1,10 +1,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-// import AttachFileIcon from '@mui/icons-material/AttachFile';
-// import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
-// import IntlMessages from '@anran/utility/IntlMessages';
-// import {useDropzone} from 'react-dropzone';
 import PropTypes from 'prop-types';
 import {Fonts} from 'shared/constants/AppEnums';
 import IconButton from '@mui/material/IconButton';
