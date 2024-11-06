@@ -89,11 +89,10 @@ const CardHeader = (props) => {
           </Box>
         )}
       </Box>
-
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: "right",
         }}
       >
         <IconButton
@@ -110,15 +109,14 @@ const CardHeader = (props) => {
         >
           <DeleteIcon />
         </IconButton>
+        {/* Confirmation Dialog for Deletion */}
+        <DeleteMember
+          member={member}
+          isOpen={openDeleteDialog}
+          confirmDelete={confirmDelete}
+          cancelDelete={cancelDelete}
+        />
       </Box>
-
-      {/* Confirmation Dialog for Deletion */}
-      <DeleteMember
-        member={member}
-        isOpen={openDeleteDialog}
-        confirmDelete={confirmDelete}
-        cancelDelete={cancelDelete}
-      />
     </Box>
   );
 };

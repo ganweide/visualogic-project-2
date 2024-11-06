@@ -63,13 +63,13 @@ const MemberDetailsForm = ({
                                     mb: 1,
                                 }}
                             >
-                                <IntlMessages id='memberDetails' />
+                                <IntlMessages id='member.Details' />
                             </Box>
                         }
                     ></CardHeader>
                     <CardContent>
                       <AppGridContainer spacing={4}>
-                        <Grid item xs={12} md={9}>
+                        <Grid item xs={12} md={6}>
                           <AppTextField
                             name='MB_registration_date'
                             fullWidth
@@ -79,9 +79,7 @@ const MemberDetailsForm = ({
                             InputLabelProps={{shrink: true}}
                           />
                         </Grid>
-                        <Grid item xs={12} md={9}>
-                        </Grid>
-                        <Grid item xs={12} md={9}>
+                        <Grid item xs={12} md={6}>
                           <AppTextField
                             name='MB_preferred_branch'
                             fullWidth
@@ -127,7 +125,7 @@ const MemberDetailsForm = ({
                   ></CardHeader>
                   <CardContent>
                     <AppGridContainer spacing={4}>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_full_name'
                             fullWidth
@@ -135,7 +133,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.fullName' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_preferred_name'
                             fullWidth
@@ -143,7 +141,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.preferredName' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_chinese_name'
                             fullWidth
@@ -151,7 +149,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.chineseName' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_IC_number'
                             fullWidth
@@ -159,7 +157,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.nricPassport' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_dob'
                             fullWidth
@@ -167,7 +165,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.dateOfBirth' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_age'
                             fullWidth
@@ -175,7 +173,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.age' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_gender'
                             fullWidth
@@ -183,15 +181,17 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.gender' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={12}>
                         <AppTextField
                             name='MB_address'
                             fullWidth
                             disabled={isViewOnly}
                             label={<IntlMessages id='member.address' />}
+                            multiline
+                            rows={3}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_city'
                             fullWidth
@@ -199,7 +199,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.city' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_postcode'
                             fullWidth
@@ -207,7 +207,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.postcode' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_states'
                             fullWidth
@@ -215,7 +215,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.states' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_mobile_number'
                             fullWidth
@@ -223,7 +223,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.mobileNumber' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_email'
                             fullWidth
@@ -231,7 +231,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.emailAddress' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={16}>
                       <AppTextField
                         name='MB_suggested_by'
                         fullWidth
@@ -284,7 +284,7 @@ const MemberDetailsForm = ({
                   ></CardHeader>
                   <CardContent>
                     <AppGridContainer spacing={4}>
-                    <Grid item xs={12} md={9}>
+                    <Grid item xs={12} md={12}>
                         <AppTextField
                             name='medicalHistory'
                             fullWidth
@@ -294,7 +294,7 @@ const MemberDetailsForm = ({
                             rows={5}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={12}>
                         <Box sx={{display: 'flex', flexDirectoin:'collumn'}}>
                           <Grid item xs={12} md={12}>
                             <FormLabel component="legend" sx={{mb: 5}}>Do you have or have you suffered from any of the following?</FormLabel>
@@ -492,7 +492,7 @@ const MemberDetailsForm = ({
                   ></CardHeader>
                   <CardContent>
                     <AppGridContainer spacing={4}>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                           name='MB_EC_name'
                           fullWidth
@@ -500,7 +500,7 @@ const MemberDetailsForm = ({
                           label={<IntlMessages id='member.emergencyContactName' />}
                         />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_EC_mobile_number'
                             fullWidth
@@ -508,7 +508,7 @@ const MemberDetailsForm = ({
                             label={<IntlMessages id='member.emergencyContactMobileNumber' />}
                           />
                       </Grid>
-                      <Grid item xs={12} md={9}>
+                      <Grid item xs={12} md={6}>
                         <AppTextField
                             name='MB_EC_relationship'
                             fullWidth

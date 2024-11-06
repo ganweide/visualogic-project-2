@@ -18,6 +18,11 @@ const Page14 = React.lazy(() => import('./TransferPackage'));
 const Page15 = React.lazy(() => import('./AttendanceInfo'));
 const Page16 = React.lazy(() => import('./UsageReport'));
 const Page17 = React.lazy(() => import('./PackageReport'));
+const Page18 = React.lazy(() => import('./Invoice'));
+const Page19 = React.lazy(() => import('./OrganisationChart'));
+const Page20 = React.lazy(() => import('./Transpose'));
+const Page21 = React.lazy(() => import('./ThermalPrint'));
+
 
 export const samplePagesConfigs = [
   {
@@ -88,4 +93,20 @@ export const samplePagesConfigs = [
     path: '/sample/PackageReport',
     element: <Page17 />,
   },
+  {
+    path: '/sample/Invoice',
+    element: <Page18 />,
+  },
+  {
+    path: '/sample/MLM',
+    element: <Page19 />,
+  },
+  {
+    path: '/sample/Transpose',
+    element: <Page20 />,
+  },
+  {
+    path: '/sample/ThermalPrint',
+    element: <Page21 />,
+  }
 ];
