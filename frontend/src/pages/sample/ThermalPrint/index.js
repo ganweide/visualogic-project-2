@@ -24,40 +24,6 @@ const Invoice = () => {
   const currentDate = new Date();
   const formattedDate = `${currentDate.toLocaleDateString()} ${currentDate.toLocaleTimeString()}`;
 
-//   // Print function for thermal printer
-//   const handlePrintToThermalPrinter = () => {
-//     let invoiceContent = `
-//       ${invoiceData.company.name}
-//       ${invoiceData.company.address}
-
-      
-//       ${invoiceData.invoiceDetails.invoiceName}
-//       Invoice #: ${invoiceData.invoiceDetails.invoiceNumber}
-//       Date: ${formattedDate}
-//       Transaction By: ${invoiceData.invoiceDetails.transactionBy}
-
-//       Qty   Description          Amt (RM)
-//     `;
-
-//     invoiceData.items.forEach((item, index) => {
-//       invoiceContent += `${index + 1}    ${item.description}     ${item.price.toFixed(2)}\n`;
-//     });
-
-//     invoiceContent += `
-//       Subtotal: ${invoiceData.total.subtotal.toFixed(2)}
-//       Total: ${invoiceData.total.total.toFixed(2)}
-//       Payment Method: ${invoiceData.total.paymentMethod}
-//       Paid: ${invoiceData.total.paid.toFixed(2)}
-//       Change: ${invoiceData.total.change.toFixed(2)}
-      
-//       Thank you and see you again!
-//       FB: anran.malaysia
-//     `;
-
-//     // Print the invoice to the thermal printer
-//     printToThermal(invoiceContent);
-//   };
-
 // Define column widths
 const quantityWidth = 5; // Width for quantity column
 
@@ -91,6 +57,7 @@ const handlePrintToThermalPrinter = () => {
     printToThermal(invoiceContent);
   };
 
+// USB printer connection
 // const vendorId = 0x0483;
 // const line = '='.repeat(45) + "\n";
 // const dash = '-'.repeat(45) + "\n";
@@ -153,6 +120,8 @@ const handlePrintToThermalPrinter = () => {
 //     }
 // };
 
+
+// Network printer connection
 const printToThermal = async (content) => {
     try {
         const response = await fetch('http://localhost:3001/print', {
@@ -175,8 +144,6 @@ const printToThermal = async (content) => {
         console.error('Error:', error);
     }
 };
-
-
 
   // PDF generation function with file name prompt
   const handleOpenDialog = () => {
